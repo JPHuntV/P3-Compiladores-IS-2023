@@ -1,0 +1,1616 @@
+package src;
+import java_cup.runtime.*;
+
+
+import java.util.Stack;
+import java.util.ArrayList;
+import java.util.List;
+
+parser code {:
+    //indica si se ha encontrado un error durante el analisis
+    Boolean errores = false;
+
+    //estructuras que almacenaran los simbolos de manera temporal durante
+    //la creacion de las tablas de simbolos
+    ListaElementosTabla listaParametros = new ListaElementosTabla();
+    ListaElementosTabla listaVariables = new ListaElementosTabla();
+    ArrayList<ASTNode> listaRetornos = new ArrayList<>();
+
+    //estructura que almacena representaciones de las funciones que se hayan encontrado
+    List<Funcion> functions = new ArrayList<Funcion>();
+
+    //estructura que almacena las tablas de simbolos definidas
+    SymbolTableStack symbolTables = new SymbolTableStack();
+    
+    /*
+    *existeFuncion
+    *E::nombre: nombre de la funcion a comprobar su existencia
+    *S::Valor booleano que indica la existencia de una funcion
+    *R::el nombre de la funcion debe ser un string
+    *O::comprobar si una funcion ya fue definidas
+    */
+    private Boolean existeFuncion(String nombre){
+        for(Funcion funcion : functions){
+            if(funcion.getName() == nombre){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /*
+    *getSymbolTableStack
+    *E::ninguna
+    *S::Tablas de simbolos que han sido creadas
+    *R::ningua
+    *O::Retornar las tablas de simbolos que han sido creadas
+    */
+    public SymbolTableStack getSymbolTableStack() {
+        return symbolTables;
+    }
+
+    
+    /*
+    *getErrores
+    *E::ningua
+    *S::valor booleano que indica la existencia de algun error
+    *R::ninguna
+    *O::indicar si durante el parseo se encontro algun error
+    */
+    public Boolean getErrores(){
+        return errores;
+    }
+
+//########################################################################
+
+    /*
+    *tiposCompatibles
+    *E::tipo1: tipo de dato a comparar, tipo2: tipo de dato a comparar
+    *S::valor booleano que indica si los tipos son compatibles
+    *R::ninguna
+    *O::comprobar si dos tipos de datos son compatibles
+    */
+    public boolean tiposCompatibles(String tipo1, String tipo2){
+        if(tipo1.equals("float") && tipo2.equals("int")){
+            return true;
+        }
+        else if (tipo1.equals("String") && tipo2.equals("char")){
+            return true;
+        }
+        else if (tipo1.equals(tipo2)){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    /*
+    *checkDeclaraVar
+    *E::tipo: tipo de dato a comparar, node: nodo que contiene el valor a comparar
+    *S::valor booleano que indica si el valor es compatible con el tipo de la variable
+    *R::ninguna
+    *O::comprobar si el valor de una variable es compatible con su tipo
+    */
+    public boolean checkDeclaraVar(String tipo, ASTNode node){
+        String valor = node.getChildren().get(0).getType();
+        switch (valor) {
+            case "literal_int":
+                return tipo.equals("int") || tipo.equals("float");
+            case "literal_bool":
+                return tipo.equals("bool");
+            case "literal_string":
+                return tipo.equals("String");
+            case "literal_float":
+                return tipo.equals("float");
+            case "literal_char":
+                return tipo.equals("char");
+            case "array":
+                boolean arrayValido = true;
+                for(ASTNode child : node.getChildren().get(0).getChildren()){
+                    if(!checkDeclaraVar(tipo, child)){
+                        System.out.println("Error: El arreglo contiene un valor incompatible con el tipo de dato");
+                        arrayValido = false;
+                    }else{
+                        arrayValido = true;
+                    }
+                }
+                return arrayValido;
+
+            case "IDENTIFIER":
+                String varName = node.getChildren().get(0).getChildren().get(0).getValue().toString();
+                String varTipo = simboloValido(varName);    
+                return tiposCompatibles(tipo, varTipo);
+            case "llamaFuncion":
+                String funName = node.getChildren().get(0).getChildren().get(0).getValue().toString();
+                ArrayList<ASTNode> funArg = new ArrayList<>();
+                if(node.getChildren().get(0).getChildren().size()>1)
+                    funArg = node.getChildren().get(0).getChildren().get(1).getChildren();
+                if(!funcionValida(funName, tipo, funArg).equals("invalida")){
+                    return true;
+                }else{
+                    return false;
+                }
+            case "expresionBinaria":
+                String valida = checkExpresion(node.getChildren().get(0));
+                return tiposCompatibles(tipo, valida);
+            case "operadorUnario":
+                ASTNode opUnario = node.getChildren().get(0);
+                String tipoOperando = opUnario.getChildren().get(0).getValue().toString();
+                switch(tipoOperando){
+                    case "IDENTIFIER":
+                        String idName = opUnario.getChildren().get(2).getValue().toString();
+                        String idTipo = simboloValido(idName);
+                        return tiposCompatibles(tipo, idTipo);
+                    case "expresionNumerica":
+                        return tipo.equals("int") || tipo.equals("float");
+                    default:
+                        return false;
+                }
+            default:
+                return false;
+        }
+    }
+
+    /*
+    *checkExpresion
+    *E::node: nodo que contiene la expresion a comparar
+    *S::tipo de dato de la expresion
+    *R::ninguna
+    *O::comprobar el tipo de dato de una expresion comparando sus operandos
+    */
+    public String checkExpresion(ASTNode node){ //operandos izquierdos
+        ArrayList<ASTNode> hijos = node.getChildren();
+        ASTNode left = (ASTNode) hijos.get(2).getValue();
+        ASTNode right = (ASTNode) hijos.get(3).getValue();
+        String tipoOp = right.getType();
+        switch(left.getType()){
+            case "literal_int":
+                if(tipoOp.equals("literal_int")){
+                    return "int";
+                }
+                else if(tipoOp.equals("literal_float")){
+                    return "float";
+                }
+                else if(checkExpresionAux(right, "int")){
+                    return "int";
+                }
+                else if(checkExpresionAux(right, "float")){
+                    return "float";
+                }
+                else{
+                    return "invalida";
+                }
+            case "literal_string":
+                if(tipoOp.equals("literal_string") || tipoOp.equals("literal_char")){
+                    return "String";
+                }
+                else{
+                    if(checkExpresionAux(right, "String")){
+                        return "String";
+                    }
+                    else{
+                        return "invalida";
+                    }
+                }
+            case "literal_float":
+                if(tipoOp.equals("literal_int") || tipoOp.equals("literal_float")){
+                    return "float";
+                }
+                else{
+                    if(checkExpresionAux(right, "int") || checkExpresionAux(right, "float")){
+                        return "float";
+                    }
+                    else{
+                        return "invalida";
+                    }
+                }
+            case "literal_char":
+                if(tipoOp.equals("literal_char")){
+                    return "char";
+                }
+                else{
+                    if(checkExpresionAux(right, "char")){
+                        return "char";
+                    }
+                    else{
+                        return "invalida";
+                    }
+                }
+            case "literal_bool":
+                if(tipoOp.equals("literal_bool")){
+                    return "bool";
+                }
+                else{
+                    if(checkExpresionAux(right, "bool")){
+                        return "bool";
+                    }
+                    else{
+                        return "invalida";
+                    }
+                }
+            case "IDENTIFIER":
+                String varName = left.getChildren().get(0).getValue().toString();
+                String varTipo = simboloValido(varName);
+                if(checkExpresionAux(right, varTipo)){
+                        return varTipo;
+                }
+                else{
+                    return "invalida";
+                }
+            case "llamaFuncion":
+                String funName = left.getChildren().get(0).getValue().toString();
+                ArrayList<ASTNode> funArg = new ArrayList<>();
+                if(left.getChildren().size()>1)
+                    funArg = left.getChildren().get(1).getChildren();
+                String tipoFuncion = funcionValida(funName, "getTipo", funArg);
+                if(checkExpresionAux(right, tipoFuncion)){
+                        return tipoFuncion;
+                }else{
+                    return "invalida";
+                }
+
+            case "expresionBinaria":
+                if(left.getChildren().get(0).getValue().toString().equals("expresionAritmetica")){
+                    String tipoExp = checkExpresion(left);
+                    if(checkExpresionAux(right, tipoExp)){
+                        return tipoExp;
+                    }else{
+                        return "invalida";
+                    }
+                }else{
+                    return "bool";
+                }
+            //case "operadorUnario":
+            //    ASTNode opUnario = node.getChildren().get(0);
+            //    System.out.println(opUnario.toString());
+            //    String tipoOperando = opUnario.getChildren().get(0).getValue().toString();
+            //    switch(tipoOperando){
+            //        case "IDENTIFIER":
+            //            String idName = opUnario.getChildren().get(2).getValue().toString();
+            //            String idTipo = simboloValido(idName);
+            //            if(tipoOp.equals("int")){
+            //                return "int";
+            //            }
+            //            else if(tipoOp.equals("float")){
+            //                return "float";
+            //            }
+            //            else{
+            //                return "invalida";
+            //            }
+            //        case "expresionNumerica":
+            //            if(tipoOp.equals("int")){
+            //                return "int";
+            //            }
+            //            else if(tipoOp.equals("float")){
+            //                return "float";
+            //            }
+            //            else{
+            //                return "invalida";
+            //            }
+            //        default:
+            //            return "invalida";
+            //    }
+            default:
+                return "invalida";
+        }
+    }
+
+    /*
+    *checkExpresionAux
+    *E: ASTNode right: nodo a la derecha del operador, String tipoCheck: tipo del nodo a la izquierda del operador
+    *S: booleano que indica si la expresion es posible o no
+    *R: right debe ser un nodo valido, tipoCheck debe ser un tipo valido
+    *O: verifica si la expresion es posible o no segun los tipos de los nodos
+    */
+    public boolean checkExpresionAux(ASTNode right, String tipoCheck){
+        String tipoOp = right.getType();
+        switch(tipoOp){
+            case "literal_int":
+                return tipoCheck.equals("int") || tipoCheck.equals("float");
+            case "literal_bool":
+                return tipoCheck.equals("bool");
+            case "literal_string":
+                return tipoCheck.equals("String")|| tipoCheck.equals("char");
+            case "literal_float":
+                return tipoCheck.equals("float") ;
+            case "literal_char":
+                return tipoCheck.equals("char");
+            case "IDENTIFIER":
+                String varName = right.getChildren().get(0).getValue().toString();
+                String varTipo = simboloValido(varName);
+                return tiposCompatibles(tipoCheck, varTipo);
+            case "llamaFuncion":
+                String funName = right.getChildren().get(0).getValue().toString();
+                ArrayList<ASTNode> funArg = new ArrayList<>();
+                if(right.getChildren().size()>1)
+                    funArg = right.getChildren().get(1).getChildren();
+                if(!funcionValida(funName, tipoCheck, funArg).equals("invalida")){
+                    return true;
+                }else{
+                    return false;
+                }
+
+            case "expresionBinaria":
+                String tipoExp = checkExpresion(right);
+                if(!tipoExp.equals("invalida")){
+                    return true;
+                }else{
+                    return false;
+                }
+            //case "operadorUnario":
+            //    ASTNode opUnario = right.getChildren().get(0);
+            //    System.out.println(opUnario.toString());
+            //    String tipoOperando = opUnario.getChildren().get(0).getValue().toString();
+            //    switch(tipoOperando){
+            //        case "IDENTIFIER":
+            //            String idName = opUnario.getChildren().get(2).getValue().toString();
+            //            String idTipo = simboloValido(idName);
+            //            return tiposCompatibles(tipoCheck, idTipo);
+            //        case "expresionNumerica":
+            //            return tipoCheck.equals("int") || tipoCheck.equals("float");
+            //        default:
+            //            return false;
+            //    }
+            default:
+                return false;
+        }
+    }
+
+    /*
+    *simboloValido
+    *E: String varName: nombre de la variable a buscar
+    *S: String con el tipo de la variable
+    *R: varName debe ser un nombre valido, la variable debe estar declarada
+    *O: busca la variable en la lista de variables y parametros y retorna su tipo
+    */
+    public String simboloValido(String varName){
+        String varTipo = listaParametros.existe(varName);
+        String varTipo1 = listaVariables.existe(varName);
+        if(varTipo != null){
+            return varTipo;
+        }    
+        else if(varTipo1 != null){
+            return varTipo1;
+        }else{
+            System.out.println("Error: "+varName+" no coincide con ningun simbolo declarado previamente");
+            return null;
+        }
+    }
+
+    /*
+    *funcionValida
+    *E: String funName: nombre de la funcion a buscar, String tipo: tipo de retorno de la funcion, ArrayList<ASTNode> argumentos: lista de argumentos de la funcion
+    *S: String con el tipo de retorno de la funcion
+    *R: funName debe ser un nombre valido, la funcion debe estar declarada, sino retorna invalida
+    *O: busca la funcion en la lista de funciones y verifica que los tipos de los argumentos sean compatibles con los tipos de los parametros
+    */
+    public String funcionValida(String funName, String tipo, ArrayList<ASTNode> argumentos){
+        for (Funcion f : functions) {
+            if(tipo.equals("getTipo")){
+                tipo = f.getTipoRetorno();
+            }
+            if (f.getName().equals(funName) && tiposCompatibles(tipo, f.getTipoRetorno())){
+                int i = 0;
+                List<ElementoTabla> parametros = f.getParameters();
+                if(parametros.size()==argumentos.size()){//la funcion y su llamada tienen la misma cantidad de parametros
+                    boolean res = true;
+                    for(ElementoTabla e : parametros){
+                        Object valorArg = argumentos.get(i).getValue();
+                        String tipoArg = argumentos.get(i).getType();
+                        switch(tipoArg){
+                            case "IDENTIFIER":
+                                String varTipo = simboloValido(valorArg.toString());
+                                res = tiposCompatibles(e.getType(), varTipo);
+                                break;
+                            case "literal_string":
+                                res = e.getType().equals("String");
+                                break;
+                            case "literal_int":
+                                res = e.getType().equals("int") || e.getType().equals("float");
+                                break;
+                            case "literal_float":
+                                res = e.getType().equals("float");
+                                break;
+                            case "literal_char":
+                                res = e.getType().equals("char") || e.getType().equals("String");
+                                break;
+                            case "llamaFuncion":
+                                String funNameNest = ((ASTNode)valorArg).getChildren().get(0).getValue().toString();
+                                ArrayList<ASTNode> funArg = new ArrayList<>();
+                                if(((ASTNode)valorArg).getChildren().size()>1)
+                                    funArg = ((ASTNode)valorArg).getChildren().get(1).getChildren();
+                                res = !funcionValida(funNameNest, e.getType(), funArg).equals("invalida");
+                                break;
+                            default:
+                                res = false;
+                                break;
+                        }
+                        i++;
+                    }
+                    if(res)
+                    return tipo;
+                }
+                System.out.println("Error: "+funName + " esperaba " + parametros.size() + " argumentos pero " + argumentos.size() + " fueron recibidos");
+                return "invalida";
+
+            }
+        }
+        return "invalida";
+    }
+
+    /*
+    checkReturnsBloque
+    E: ASTNode bloque: bloque de codigo a revisar
+    S: booleano que indica si el bloque tiene o no un return
+    R: bloque debe ser un bloque valido
+    O: revisa si el bloque tiene un return, si lo tiene lo agrega a la lista de retornos
+        utilizado para comprobar que la funcion tenga un return
+    */
+    public boolean checkReturnsBloque(ASTNode bloque){
+        int cantReturn = 0;
+        for(ASTNode sentencia : bloque.getChildren()){
+            if(sentencia.getType().equals("returnStm")){
+                listaRetornos.add(sentencia);
+                cantReturn++;
+            }
+        }
+        if(cantReturn <= 1){
+            return true;
+        }
+        return false;
+    }
+
+    /*
+    *checkDeclaraArray
+    *E: ASTNode node: nodo a revisar
+    *S: booleano que indica si todos los valores del array son del tipo del array
+    *R: node debe ser un nodo valido
+    *O: revisa si todos los valores del array son del tipo del array
+    */
+    public boolean checkDeclaraArray(ASTNode node){
+        if(node.getType().equals("declaraArray")){
+            String tipo = node.getChildren().get(0).getValue().toString();
+            String nombre = node.getValue().toString();
+            int tam = Integer.parseInt(node.getChildren().get(1).getValue().toString());
+            String tipoArray = listaVariables.existe(nombre);
+            if(tipoArray == null){
+                ArrayList<ASTNode> valores = node.getChildren().get(2).getChildren();
+                for(ASTNode valor : valores){
+                    if(!checkDeclaraVar(tipo, valor)){
+                        System.out.println("Error: el tipo de los valores del array "+nombre+" no coinciden con el tipo del array");
+                        return false;
+                    }
+                }
+                listaVariables.addParameter(new ElementoTabla(nombre, tipo, tam));
+                return true;
+            }else{
+                System.out.println("Error: "+nombre+" ya fue declarado");
+                return false;
+            }
+        }
+        return false;
+    }
+
+
+    //instancia del analizador lexico creado en jflex
+    Analizador s;
+    parser(Analizador s){ this.s=s; }
+:}
+
+scan with {: return s.next_token(); :};
+
+/*---------------------------declaraciones------------------------*/
+
+terminal REXC, OR, AND, MULT, LPAREN , RPAREN, MENOS, MAS, ASIG, LBRACKET, RBRACKET, LBRACE, RBRACE, 
+    COMA, MENOR, MAYOR, DIV, MENORIGUAL, MAYORIGUAL, EQUAL, NOTEQUAL, POTENCIA, MODULO, INCREMENTO, 
+    DECREMENTO, NOT, IF, ELIF, ELSE, WHILE, DO, FOR, RETURN, BREAK, LEER, ESCRIBIR, uminus;
+
+terminal String LITERAL_INT, LITERAL_FLOAT, LITERAL_BOOL, LITERAL_CHAR, LITERAL_STRING;
+terminal String IDENTIFIER, DOLLAR, INT, FLOAT, STRING, CHAR, ARRAY, BOOL,MAIN;
+
+non terminal  inicio, programa, main, funciones,expresion, opRelacional, operadorArit, 
+    operadorUnario, operadorLogico, expresionAritmetica, expresionRelacional, expresionLogica, 
+    terminoLogico, operandoArit, operandoRel, array, if, elif, while, doWhile, 
+    for, estructuraControl, return, break, argumentos, llamaFuncion, asignacion, sentencia, bloque, 
+    parametros, declaraFuncion,tipo, declaraArray, declaraArrayAux, declaraVar, declaraVarNoAsig, getValorArray, 
+    setValorArray, lectura, numerico, escritura, literales, argumento,  else;
+
+
+//declaraciones de precedencia
+precedence left MAS, MENOS;
+precedence left MULT, DIV;
+precedence right uminus;
+precedence left  POTENCIA, MODULO;
+precedence left AND, OR;
+precedence nonassoc NOT, REXC;
+precedence left DOLLAR;
+precedence left CHAR, INT;
+precedence left IDENTIFIER;
+precedence left LPAREN,LBRACKET;
+precedence left expresionLogica;
+precedence left expresionRelacional;
+
+//punto de entrada al analisis
+start with inicio;
+
+inicio ::= programa:e {:
+        System.out.println("### Parseo finalizado ###");
+        ASTNode inicio = new ASTNode("inicio");
+        inicio.addChild((ASTNode)e);
+        RESULT = inicio;
+    :};
+
+
+programa ::= main:e {: 
+        //construccion del nodo para el arbol sintactico
+        ASTNode programa = new ASTNode("programa");
+        programa.addChild((ASTNode)e);
+        RESULT = programa;
+    :}
+    | funciones:f main:m {:
+        //construccion del nodo para el arbol sintactico
+        ((ASTNode)f).setType("programa");
+        ((ASTNode)f).addChild((ASTNode)m);
+        RESULT = f;
+    :}
+    | main:m funciones:f {:
+        //construccion del nodo para el arbol sintactico 
+        ASTNode programa = new ASTNode("programa");
+        programa.addChild((ASTNode)m);
+        ASTNode bNode = (ASTNode)f;
+        for(ASTNode child : bNode.getChildren()){
+            programa.addChild(child);
+        }
+        RESULT = programa;
+    :}
+    | funciones:f main:m funciones:e{:
+        //construccion del nodo para el arbol sintactico 
+        ASTNode programa = new ASTNode("programa");
+        ASTNode bNode = (ASTNode)f;
+        for(ASTNode child : bNode.getChildren()){
+            programa.addChild(child);
+        }
+        programa.addChild((ASTNode)m);
+        bNode = (ASTNode)e;
+        for(ASTNode child : bNode.getChildren()){
+            programa.addChild(child);
+        }
+        RESULT = programa;
+    :}
+    ;
+
+
+main ::= INT:t MAIN:e LPAREN RPAREN LBRACE bloque:d RBRACE 
+    {:
+        //construccion del nodo para el arbol sintactico 
+        boolean valida = true;
+        Boolean existe = false;
+        for (Funcion f : functions) {
+            if (f.getName().equals(e) && f.getTipoRetorno().equals((String) t )){
+                System.out.println("Error: La funcion "+ (String) t +"  " + e + " ya fue declarada");
+                errores = true;
+                valida = false;
+                existe = true;
+            }
+        }
+        if(existe == false){
+            Funcion newFuncion = new Funcion(e, listaParametros.getParams(), (String) t);
+            functions.add(newFuncion);
+
+            SymbolTable symbolTable = new SymbolTable(e,(String) t);
+
+            for (ElementoTabla param : listaParametros.getParams()) {
+                symbolTable.addSymbol(param.getName(), param.getType());
+            }
+            for (ElementoTabla par : listaVariables.getParams()) {
+                if (symbolTable.containsSymbol( par.getName())) {
+                    System.out.println("Error: El simbolo " +  par.getName() + " ya fue declarado en esta función");
+                    valida = false;
+                    errores = true;
+                }else{
+                    symbolTable.addSymbol(par.getName(), par.getType());
+                }
+            }
+             getSymbolTableStack().push(symbolTable);  
+        }
+        
+        ASTNode main = new ASTNode("declaraFuncion","main");
+        if(!((ASTNode) d).navigateAST()){
+            System.out.println("Error: main no tiene sentencia de retorno");
+            valida = false;
+        }
+        if(!checkReturnsBloque((ASTNode)d)){
+            valida = false;
+        }
+        for (ASTNode ret : listaRetornos) {
+            ASTNode nodoRet = ret.getChildren().get(0);
+            boolean validReturn = checkDeclaraVar((String)t, nodoRet);
+            if(!validReturn){
+                valida = false;
+                System.out.println("Error: El tipo de retorno de main no coincide con el valor retornado ");
+                break;
+            }
+        }
+        listaVariables  = new ListaElementosTabla();
+        listaParametros  = new ListaElementosTabla();
+        main.addChild((ASTNode) d);
+        main.addChild(new ASTNode("dataType",t));
+        listaRetornos = new ArrayList();
+        if(valida) RESULT = main;    
+    :};
+
+funciones ::= funciones:f declaraFuncion:d {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("declaraFuncion");
+        ASTNode bNode = (ASTNode)f;
+        for(ASTNode child : bNode.getChildren()){
+            res.addChild(child);
+        }
+        res.addChild((ASTNode)d);
+        RESULT = res;
+    :}
+    | declaraFuncion:d {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("declaraFuncion");
+        res.addChild((ASTNode)d);
+        RESULT = res;
+
+        
+    :}
+    ;
+
+
+expresion ::= expresionLogica:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("init");
+        res.addChild((ASTNode)e);
+        RESULT = res;
+    :}
+    |expresionAritmetica:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("init");
+        res.addChild((ASTNode)e);
+        RESULT = res;
+    :}
+    ;
+
+
+
+operadorArit::= MAS:e {:RESULT = e;:}
+    | MENOS:e {:RESULT = e;:}
+    | MULT :e {:RESULT = e;:}
+    | POTENCIA :e {:RESULT = e;:}
+    | DIV :e {:RESULT = e;:}
+    | MODULO:e {:RESULT = e;:}
+    ;
+
+
+opRelacional ::= MENOR:e {:RESULT = e;:}
+    | MENORIGUAL:e {:RESULT = e;:}
+    | MAYOR:e {:RESULT = e;:}
+    | MAYORIGUAL:e {:RESULT = e;:}
+    | EQUAL:e {:RESULT = e;:}
+    | NOTEQUAL:e {:RESULT = e;:}
+    ;
+
+
+operadorUnario ::= MENOS:op numerico:e  {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode expresionUnaria = new ASTNode("tipo","expresionNumerica");
+        ASTNode operador = new ASTNode("operador",op);
+        ASTNode res = new ASTNode("res");
+        res.addChild((ASTNode)expresionUnaria);
+        res.addChild((ASTNode)operador);
+        res.addChild(new ASTNode("value", (ASTNode)e));
+        RESULT = res;
+    :} %prec uminus
+    |MENOS:op IDENTIFIER:e  {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode expresionUnaria = new ASTNode("tipo","IDENTIFIER");
+        ASTNode operador = new ASTNode("operador",op);
+        ASTNode res = new ASTNode("res");
+        res.addChild((ASTNode)expresionUnaria);
+        res.addChild((ASTNode)operador);
+        res.addChild(new ASTNode("value", e));
+        RESULT = res;
+    :} %prec uminus
+    | INCREMENTO:op IDENTIFIER:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode expresionUnaria = new ASTNode("tipo","IDENTIFIER");
+        ASTNode operador = new ASTNode("operador",op);
+        ASTNode res = new ASTNode("res");
+        res.addChild((ASTNode)expresionUnaria);
+        res.addChild((ASTNode)operador);
+        res.addChild(new ASTNode("value", e));
+        RESULT = res;
+    :}
+    | DECREMENTO:op IDENTIFIER:e{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode expresionUnaria = new ASTNode("tipo","IDENTIFIER");
+        ASTNode operador = new ASTNode("operador",op);
+        ASTNode res = new ASTNode("res");
+        res.addChild((ASTNode)expresionUnaria);
+        res.addChild((ASTNode)operador);
+        res.addChild(new ASTNode("value", e));
+        RESULT = res;
+    :}
+    ;
+
+
+operadorLogico ::= AND:e {:RESULT = e;:}
+    |OR:e {:RESULT = e;:} 
+    |REXC:e {:RESULT = e;:}
+    //|NOT
+    ;
+
+
+
+expresionAritmetica ::= operandoArit:e {:
+        RESULT =(ASTNode)e;
+    :}
+    | expresionAritmetica:ex operadorArit:op operandoArit:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode expresionBinaria = new ASTNode("tipo","expresionAritmetica");
+        ASTNode operador = new ASTNode("operador",op);
+        ASTNode res = new ASTNode("expresionBinaria");
+        res.addChild((ASTNode)expresionBinaria);
+        res.addChild((ASTNode)operador);
+        res.addChild(new ASTNode("left",(ASTNode)ex));
+        res.addChild(new ASTNode("right",(ASTNode)e));
+        RESULT = res;
+    :}
+   
+    ;
+
+
+
+
+
+expresionRelacional ::= operandoRel:a opRelacional:op operandoRel:b {:
+    //construccion del nodo para el arbol sintactico
+    ASTNode expresionBinaria = new ASTNode("tipo","expresionRelacional");
+    ASTNode res = new ASTNode("expresionBinaria");
+    res.addChild((ASTNode)expresionBinaria);
+    res.addChild(new ASTNode("operador",op));
+    res.addChild(new ASTNode("left",(ASTNode)a));
+    res.addChild(new ASTNode("right",(ASTNode)b));
+    RESULT = res;
+:}
+
+ ;
+
+
+expresionLogica ::= terminoLogico:t {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode terminoLogico = new ASTNode("terminoLogico");
+        terminoLogico.addChild((ASTNode)t);
+        RESULT = (ASTNode)t;
+    :}
+    
+    | expresionLogica:ex operadorLogico:op terminoLogico:e{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode expresionBinaria = new ASTNode("expresionBinaria");
+        expresionBinaria.addChild(new ASTNode("tipo","expresionLogica"));
+        expresionBinaria.addChild(new ASTNode("operador",op));
+        expresionBinaria.addChild(new ASTNode("left",(ASTNode)ex));
+        expresionBinaria.addChild(new ASTNode("right",(ASTNode)e));
+        RESULT = expresionBinaria;
+    :}
+    
+    ;
+
+
+terminoLogico ::= LITERAL_BOOL:b {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode literal_bool = new ASTNode("literal_bool");
+        literal_bool.addChild(new ASTNode(b));
+        RESULT = (literal_bool);
+    :}
+    | expresionRelacional:r {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode expresionRelacional = new ASTNode("expresionBinaria");
+        expresionRelacional.addChild((ASTNode)r);
+        RESULT = (ASTNode)r;
+    :}
+    | NOT:op terminoLogico:t{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode notOp = new ASTNode("notOp");
+        notOp.addChild((ASTNode)t);
+        ASTNode res =  new ASTNode("res");
+        res.addChild(notOp);
+        RESULT = (res);
+    :}
+    | LPAREN expresionLogica:r RPAREN {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode expresionLogica = new ASTNode("expresionBinaria");
+        expresionLogica.addChild((ASTNode)r);
+        RESULT = (ASTNode)r;
+    :}
+    
+    ;
+
+
+operandoArit ::= 
+    IDENTIFIER:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode IDENTIFIER = new ASTNode("IDENTIFIER");
+        IDENTIFIER.addChild(new ASTNode("valor",e));
+        RESULT = IDENTIFIER;
+    :}
+    | LITERAL_STRING:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode literal_string = new ASTNode("literal_string");
+        literal_string.addChild(new ASTNode(e));
+        RESULT = literal_string;
+    :}
+    | LITERAL_INT:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode literal_int = new ASTNode("literal_int");
+        literal_int.addChild(new ASTNode(e));
+        RESULT = literal_int;
+    :}
+    | LITERAL_FLOAT:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode literal_float = new ASTNode("literal_float");
+        literal_float.addChild(new ASTNode(e));
+        RESULT = literal_float;
+    :}
+    | LITERAL_CHAR:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode literal_char = new ASTNode("literal_char");
+        literal_char.addChild(new ASTNode(e));
+        RESULT = literal_char;
+    :}
+    | llamaFuncion:e{:
+        //construccion del nodo para el arbol sintactico
+        ((ASTNode)e).setType("llamaFuncion");
+        RESULT = ((ASTNode)e);
+    :}   
+    | operadorUnario:e{:
+        //construccion del nodo para el arbol sintactico
+        ((ASTNode)e).setType("operadorUnario");
+        RESULT = ((ASTNode)e);
+    :}  
+    | LBRACKET array:e RBRACKET{:
+        RESULT = e;
+    :}
+    | getValorArray:e {:
+        RESULT = ((ASTNode)e);
+    :}
+    | LPAREN expresionAritmetica:e RPAREN {:
+        RESULT = e;
+    :}
+    ;
+
+
+operandoRel ::= operandoArit:e {:RESULT = e;:} 
+    | LITERAL_BOOL:b {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode literal_bool = new ASTNode("literal_bool");
+        literal_bool.addChild(new ASTNode(b));
+        RESULT = (literal_bool);
+    :}
+    ;
+
+
+    //construccion del nodo para el arbol sintactico
+literales ::= LITERAL_INT:e {:RESULT = new ASTNode("literal_int",e);:}
+    |LITERAL_FLOAT:e {:RESULT = new ASTNode("literal_float",e);:}
+    |LITERAL_BOOL:e {:RESULT = new ASTNode("literal_bool",e);:}
+    |LITERAL_STRING:e {:RESULT = new ASTNode("literal_string",e);:}
+    |LITERAL_CHAR:e {:RESULT = new ASTNode("literal_char",e);:}
+    |LBRACKET array:e RBRACKET {:RESULT = new ASTNode("array",e);:}
+    ;
+
+
+array ::= expresion:a {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("array");
+        res.addChild((ASTNode)a);
+        RESULT = res;
+    :}  
+    | array:a COMA expresion:e{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("array");
+        ASTNode bNode = (ASTNode)a;
+        for(ASTNode child : bNode.getChildren()){
+            res.addChild(child);
+        }
+        res.addChild((ASTNode)e);
+        RESULT = res;
+    :}
+    ;
+
+
+if ::= IF LPAREN expresionLogica:exp RPAREN LBRACE bloque:b RBRACE {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res =  new ASTNode("estructuraControl");
+        boolean valida = true;
+        res.addChild(new ASTNode("tipo","ifStm"));
+        res.addChild(new ASTNode("eval", (ASTNode)exp));
+        res.addChild(new ASTNode("body",(ASTNode)b));
+        //checkReturnsBloque((ASTNode)b);
+        if(((ASTNode)exp).getType().equals("expresionBinaria")){
+            if(checkExpresion((ASTNode)exp).equals("invalida")){
+                valida = false;
+            }
+        }
+        if(!checkReturnsBloque((ASTNode)b)){
+            valida = false;
+        }
+        if(valida) RESULT = res;
+    :}
+    ;
+
+
+elif ::= ELIF LPAREN expresionLogica:exp RPAREN LBRACE bloque:b RBRACE{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res =  new ASTNode("estructuraControl");
+        res.addChild(new ASTNode("tipo","elifStm"));
+        res.addChild(new ASTNode("eval", (ASTNode)exp));
+        res.addChild(new ASTNode("body",(ASTNode)b));
+        boolean valida = true;
+        if(((ASTNode)exp).getType().equals("expresionBinaria")){
+            if(!checkExpresion((ASTNode)exp).equals("invalida")){
+                valida = true;
+            }else{
+                valida = false;
+            }
+        }else if(((ASTNode)exp).getType().equals("literal_bool")){
+            valida = true;
+        }
+        if(!checkReturnsBloque((ASTNode)b)){
+            valida = false;
+        }
+        if(valida) RESULT = res;
+    :}
+    | elif:e ELIF LPAREN expresionLogica:exp RPAREN LBRACE bloque:b RBRACE{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res =  new ASTNode("estructuraControl");
+        res.addChild(new ASTNode("tipo","elifStm"));
+        res.addChild(new ASTNode("eval", (ASTNode)exp));
+        res.addChild(new ASTNode("body",(ASTNode)b));
+        //res.addChild(new ASTNode("alternate","null"));
+        ((ASTNode)e).addChild(new ASTNode("alternate",res));
+        boolean valida = true;
+        if(((ASTNode)exp).getType().equals("expresionBinaria")){
+            if(!checkExpresion((ASTNode)exp).equals("invalida")){
+                valida = true;
+            }else{
+                valida = false;
+            }
+        }else if(((ASTNode)exp).getType().equals("literal_bool")){
+            valida = true;
+        }
+        if(!checkReturnsBloque((ASTNode)b)){
+            valida = false;
+        }
+        if(valida) RESULT = e;
+    :}
+    ;
+
+
+else ::= ELSE LBRACE bloque:b RBRACE {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res =  new ASTNode("estructuraControl");
+        res.addChild(new ASTNode("tipo","elseStm"));
+        res.addChild(new ASTNode("body",(ASTNode)b));
+        RESULT = res;
+
+    :}
+;
+
+
+while ::= WHILE LPAREN expresionLogica:exp RPAREN LBRACE bloque:b RBRACE {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res =  new ASTNode("estructuraControl");
+        res.addChild(new ASTNode("tipo","whileStm"));
+        res.addChild(new ASTNode("eval", (ASTNode)exp));
+        res.addChild(new ASTNode("body",(ASTNode)b));
+        boolean valida = true;
+        if(((ASTNode)exp).getType().equals("expresionBinaria")){
+            if(!checkExpresion((ASTNode)exp).equals("invalida")){
+                valida = true;
+            }else{
+                valida = false;
+            }
+        }else if(((ASTNode)exp).getType().equals("literal_bool")){
+            valida = true;
+        }
+        if(!checkReturnsBloque((ASTNode)b)){
+            valida = false;
+        }
+        if(valida) RESULT = res;
+    :}
+    ;
+
+
+doWhile ::= DO LBRACE bloque:b RBRACE WHILE LPAREN expresionLogica:exp RPAREN DOLLAR {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res =  new ASTNode("estructuraControl");
+        res.addChild(new ASTNode("tipo","doWhileStm"));
+        res.addChild(new ASTNode("body",(ASTNode)b));
+        res.addChild(new ASTNode("eval", (ASTNode)exp));
+        boolean valida = true;
+        if(((ASTNode)exp).getType().equals("expresionBinaria")){
+            if(!checkExpresion((ASTNode)exp).equals("invalida")){
+                valida = true;
+            }else{
+                valida = false;
+            }
+        }else if(((ASTNode)exp).getType().equals("literal_bool")){
+            valida = true;
+        }else{
+            valida = false;
+        }
+        if(!checkReturnsBloque((ASTNode)b)){
+            valida = false;
+        }
+        if(valida) RESULT = res;
+    :}
+    ;
+
+
+for ::= FOR LPAREN declaraVar:d DOLLAR expresionLogica:exp DOLLAR expresion:e  RPAREN LBRACE bloque:b RBRACE {:
+        
+        //construccion del nodo para el arbol sintactico
+        ASTNode res =  new ASTNode("estructuraControl");
+        res.addChild(new ASTNode("tipo","forStm"));
+        res.addChild(new ASTNode("init", (ASTNode)d));
+        res.addChild(new ASTNode("eval", (ASTNode)exp));
+        res.addChild(new ASTNode("update", (ASTNode)e));
+        res.addChild(new ASTNode("body",(ASTNode)b));
+        boolean valida = true;
+        if(((ASTNode)exp).getType().equals("expresionBinaria")){
+            if(!checkExpresion((ASTNode)exp).equals("invalida")){
+                valida = true;
+            }else{
+                valida = false;
+            }
+        }else if(((ASTNode)exp).getType().equals("literal_bool")){
+            valida = true;
+        }else{
+            valida = false;
+        }
+        if(!checkReturnsBloque((ASTNode)b)){
+            valida = false;
+        }
+        if(valida) RESULT = res;
+    :}
+    ;
+
+//alternate funciona como else, cada else if y else se agrega como alternate
+estructuraControl ::= if:f{:
+        ((ASTNode)f).addChild(new ASTNode("alternate", null));
+        RESULT = f;
+    :}
+    |if:f elif:e {:
+        ((ASTNode)f).addChild(new ASTNode("alternate",(ASTNode) e));
+        RESULT = f;
+    :}
+    |if:f elif:ef else:e {:
+        ((ASTNode)f).addChild(new ASTNode("alternate",(ASTNode) ef));
+        ((ASTNode)f).addChild(new ASTNode("alternate",(ASTNode) e));
+        RESULT = f;
+    :}
+    |if:f  else:e {:
+        ((ASTNode)f).addChild(new ASTNode("alternate",(ASTNode) e));
+        RESULT = f;
+    :}
+    |while:w {:
+        RESULT = w;
+    :}
+    |doWhile:dw {:
+        RESULT = dw;
+    :}
+    |for:f {:
+        RESULT = f;
+    :}
+    ;
+
+
+return ::= RETURN:r expresion:e{:
+        ((ASTNode)e).setType("value");
+        RESULT = ((ASTNode)e);
+    :}
+    //|RETURN:r {:
+    //    ASTNode e = new ASTNode("value", null);
+    //    RESULT = e;
+    //:}
+    ;
+
+
+break ::= BREAK:r //{: no necesita una construccion detallada del AST   :}
+
+;
+
+
+argumento ::= 
+    IDENTIFIER:e {:
+        RESULT = new ASTNode("IDENTIFIER",e);
+    :}
+    | literales:e {:RESULT = e;:}
+    | llamaFuncion:e {:
+        ((ASTNode)e).setType("funcion");
+        RESULT = new ASTNode("llamaFuncion",((ASTNode)e));:}
+    ;
+
+
+argumentos ::= argumento:a {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("argumentos");
+        res.addChild((ASTNode)a);
+        RESULT = res;
+    :}
+    | argumentos:a COMA argumento:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("argumentos");
+        ASTNode bNode = (ASTNode)a;
+        for(ASTNode child : bNode.getChildren()){
+            res.addChild(child);
+        }
+        res.addChild((ASTNode)e);
+        RESULT = res;
+    :}
+    ;
+
+
+llamaFuncion ::= IDENTIFIER:e  LPAREN RPAREN {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("res");
+        ASTNode llamadaFuncion = new ASTNode("nombre", e);
+        res.addChild(llamadaFuncion);
+        RESULT = res;
+    :}
+    | IDENTIFIER:e LPAREN argumentos:a RPAREN {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("res");
+        ASTNode llamadaFuncion = new ASTNode("nombre", e);
+        res.addChild(llamadaFuncion);
+        res.addChild((ASTNode)a);
+        RESULT = res;
+    :}
+    | lectura:l {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("res");
+        ASTNode lectura = new ASTNode("nombre","read");
+        res.addChild(lectura);
+        res.addChild((ASTNode)l);
+        RESULT = res;
+    :}
+    | escritura:e{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("res");
+        ASTNode escritura = new ASTNode("nombre","print");
+        res.addChild(escritura);
+        res.addChild((ASTNode)e);
+        RESULT = res;
+    :}
+    ;
+
+
+asignacion ::= IDENTIFIER:e ASIG expresion:ex{:
+        //construccion del nodo para el arbol sintactico
+        if(!checkDeclaraVar(simboloValido((String)e), (ASTNode)ex)){
+            System.out.println("Error: variable no declarada");
+            System.exit(0);
+        }else{
+            ASTNode asignacion = new ASTNode("asignacion", e);
+            asignacion.addChild((ASTNode)ex);
+            RESULT = asignacion;
+        }
+    :} 
+
+;
+
+
+sentencia ::= 
+    asignacion:a DOLLAR{:
+        RESULT = (ASTNode)a;
+    :} 
+    | estructuraControl:a {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode estructuraControl = new ASTNode("estructuraControl");
+        estructuraControl.addChild((ASTNode)a);
+        RESULT = (ASTNode)a;
+    :}
+    | expresion:e DOLLAR{:
+        //construccion del nodo para el arbol sintactico
+        ((ASTNode)e).setType("expresion");
+        RESULT = (ASTNode)e;
+    :} 
+    | declaraArray:a DOLLAR {:
+        //construccion del nodo para el arbol sintactico
+        listaVariables.addParameter(new ElementoTabla(((ASTNode)a).getValue().toString(),((ASTNode)a).getChildren().get(0).getValue().toString()));
+        RESULT = (ASTNode)a;
+    :}
+    | declaraVar:a DOLLAR {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode declaraVar = new ASTNode("declaraVar");
+        declaraVar.addChild((ASTNode)a);
+        RESULT = a;
+    :}
+    | declaraVarNoAsig:a DOLLAR {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode declaraVar = new ASTNode("declaraVar");
+        declaraVar.addChild((ASTNode)a);
+        RESULT = a;
+    :}
+    | return:a DOLLAR {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode returnStm = new ASTNode("returnStm");
+        returnStm.addChild((ASTNode)a);
+        RESULT = returnStm;
+    :}
+    | break DOLLAR{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode breakStm = new ASTNode("breakStm");
+        RESULT = breakStm;
+    :}
+    | getValorArray:e DOLLAR {:
+        RESULT = e;
+    :}
+    | setValorArray:e DOLLAR {:
+        RESULT = e;
+    :}
+    | error DOLLAR {: System.out.println("##### Se ha encontrado un error de syntaxis, el parseo continuara"); 
+        errores = true;:}
+    ;
+
+
+bloque ::= 
+    sentencia:s {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("bloque");
+        res.addChild((ASTNode)s);
+        RESULT = res;
+    :}
+    | bloque:b sentencia:s {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("bloque");
+        ASTNode bNode = (ASTNode)b;
+        for(ASTNode child : bNode.getChildren()){
+            res.addChild(child);
+        }
+        res.addChild((ASTNode)s);
+        RESULT = res;
+    :}
+    ;
+
+
+parametros ::= 
+    tipo:t IDENTIFIER:i {:
+        //construccion del nodo para el arbol sintactico 
+        listaParametros.addParameter(new ElementoTabla(i,(String) t));
+        ASTNode res = new ASTNode("parametros");
+        res.addChild(new ASTNode((String)t,(String)i));
+        RESULT = res;
+    :}
+    | parametros:p COMA tipo:t IDENTIFIER:i {:
+        //construccion del nodo para el arbol sintactico
+        listaParametros.addParameter(new ElementoTabla(i,(String) t));
+        ASTNode res = new ASTNode("parametros");
+        ASTNode bNode = (ASTNode)p;
+        for(ASTNode child : bNode.getChildren()){
+            res.addChild(child);
+        }
+        res.addChild(new ASTNode((String)t,(String)i));
+        RESULT = res;
+    :}
+    ;
+
+
+declaraFuncion ::= tipo:t IDENTIFIER:e LPAREN parametros:p RPAREN LBRACE bloque:b RBRACE 
+    {:
+        //construccion del nodo para el arbol sintactico
+        boolean valida = true;
+        Boolean existe = false;
+        for (Funcion f : functions) {
+            if (f.getName().equals(e) && f.getTipoRetorno().equals((String) t)) {
+                System.out.println("Error: La funcion "+ (String) t +"  " + e + " ya fue declarada");
+                errores = true;
+                existe = true;
+                valida = false;
+            }
+        }
+        if(existe == false){
+            Funcion newFuncion = new Funcion(e, listaParametros.getParams(), (String) t);
+            functions.add(newFuncion);
+
+            SymbolTable symbolTable = new SymbolTable(e,(String) t);
+
+            for (ElementoTabla param : listaParametros.getParams()) {
+                symbolTable.addSymbol(param.getName(), param.getType());
+            }
+            for (ElementoTabla par : listaVariables.getParams()) {
+                if (symbolTable.containsSymbol( par.getName())) {
+                    System.out.println("Error: Simbolo " +  par.getName() + " ya ha sido declarado en esta funcion");
+                    errores = true;
+                    valida = false;
+                }else{
+                    symbolTable.addSymbol(par.getName(), par.getType());
+                }
+            }
+             getSymbolTableStack().push(symbolTable);
+        }
+        
+        ASTNode main = new ASTNode("declaraFuncion",e);
+        if(!((ASTNode) b).navigateAST()){
+            System.out.println("Error: "+e+" no tiene sentencia de retorno");
+            valida = false;
+        }
+        if(!checkReturnsBloque((ASTNode)b)){
+            valida = false;
+        }
+        for (ASTNode ret : listaRetornos) {
+            ASTNode nodoRet = ret.getChildren().get(0);
+            boolean validReturn = checkDeclaraVar((String)t, nodoRet);
+            if(!validReturn){
+                valida =false;
+                System.out.println("Error: El tipo de retorno de "+e+" no coincide con el valor retornado ");
+                break;
+            }
+        }
+        listaVariables  = new ListaElementosTabla();
+        listaParametros  = new ListaElementosTabla();
+        main.addChild((ASTNode) p);
+        main.addChild((ASTNode) b);
+        main.addChild(new ASTNode("dataType",t));
+        listaRetornos = new ArrayList();
+        if(valida) RESULT = main;  
+    :}
+
+    | tipo:t IDENTIFIER:e LPAREN RPAREN LBRACE bloque:b RBRACE
+    {:
+        //construccion del nodo para el arbol sintactico
+        boolean valida = true;
+        Boolean existe = false;
+        for (Funcion f : functions) {
+            if (f.getName().equals(e) && f.getTipoRetorno().equals((String) t)) {
+                System.out.println("La funcion \""+ (String) t +"  " + e + "\" ya fue declarada previamente");
+                errores = true;
+                existe = true;
+                valida = false;
+            }
+        }
+        if(existe == false){
+            Funcion newFuncion = new Funcion(e, listaParametros.getParams(), (String) t);
+            functions.add(newFuncion);
+
+            SymbolTable symbolTable = new SymbolTable(e,(String) t);
+
+            for (ElementoTabla param : listaParametros.getParams()) {
+                symbolTable.addSymbol(param.getName(), param.getType());
+            }
+            for (ElementoTabla par : listaVariables.getParams()) {
+                if (symbolTable.containsSymbol( par.getName())) {
+                    System.out.println("Simbolo " +  par.getName() + " ya ha sido declarado en esta funcion");
+                    errores = true;
+                    valida = false;
+                }else{
+                    symbolTable.addSymbol(par.getName(), par.getType());
+                }
+            }
+             getSymbolTableStack().push(symbolTable);
+        }
+        
+        ASTNode main = new ASTNode("declaraFuncion",e);
+        if(!((ASTNode) b).navigateAST()){
+            System.out.println("Error: "+e+" no tiene sentencia de retorno");
+            valida = false;
+        }
+        if(!checkReturnsBloque((ASTNode)b)){
+            valida = false;
+        }
+        for (ASTNode ret : listaRetornos) {
+            ASTNode nodoRet = ret.getChildren().get(0);
+            boolean validReturn = checkDeclaraVar((String)t, nodoRet); 
+            if(!validReturn){
+                valida =false;
+                System.out.println("Error: El tipo de retorno de "+e+" no coincide con el valor retornado ");
+                break;
+            }
+        }
+        listaVariables  = new ListaElementosTabla();
+        listaParametros  = new ListaElementosTabla();
+        main.addChild((ASTNode) b);
+        main.addChild(new ASTNode("dataType",t));
+        listaRetornos = new ArrayList();
+        if(valida) RESULT = main;  
+    :};
+
+
+
+
+
+tipo ::= INT:e {:RESULT = e;:}
+    | CHAR:e {: RESULT = e;:}
+    |FLOAT:e {:  RESULT = e;:}
+    |STRING:e {: RESULT = e;:}
+    |ARRAY:e {:  RESULT = e;:}
+    |BOOL:e {: RESULT = e; :}
+    ;
+
+
+declaraArray ::=  
+    INT:t IDENTIFIER:i LBRACKET LITERAL_INT:s RBRACKET {:
+        //construccion del nodo para el arbol sintactico
+        //listaVariables.addParameter(new ElementoTabla(i,(String) t));
+        ASTNode declaraVar = new ASTNode("declaraArray", i);
+        declaraVar.addChild( new ASTNode("dataType", t) );
+        declaraVar.addChild(new ASTNode("size",s));
+        RESULT = declaraVar;
+    :}
+    |CHAR:t IDENTIFIER:i LBRACKET LITERAL_INT:s RBRACKET{:
+        //construccion del nodo para el arbol sintactico
+        //listaVariables.addParameter(new ElementoTabla(i,(String) t));
+        ASTNode declaraVar = new ASTNode("declaraArray", i);
+        declaraVar.addChild( new ASTNode("dataType", t) );
+        declaraVar.addChild(new ASTNode("size",s));
+        RESULT = declaraVar;
+    :}
+    ;
+
+
+declaraArrayAux ::= LBRACKET LITERAL_INT:e RBRACKET{:
+        RESULT = e;
+    :}
+    ;
+
+declaraVarNoAsig ::= 
+    INT:t IDENTIFIER:i {:
+        //construccion del nodo para el arbol sintactico
+        listaVariables.addParameter(new ElementoTabla(i,(String) t));
+        ASTNode declaraVar = new ASTNode("declaraVar", i);
+        declaraVar.addChild( new ASTNode("dataType", t) );
+        RESULT = declaraVar;
+    :}  
+    | CHAR:t IDENTIFIER:i {:
+        //construccion del nodo para el arbol sintactico
+        listaVariables.addParameter(new ElementoTabla(i,(String) t));
+        ASTNode declaraVar = new ASTNode("declaraVar", i);
+        declaraVar.addChild( new ASTNode("dataType", t) );
+        RESULT = declaraVar;
+    :}
+    | tipo:t IDENTIFIER:i  {:
+        //construccion del nodo para el arbol sintactico
+        listaVariables.addParameter(new ElementoTabla(i,(String) t));
+        ASTNode declaraVar = new ASTNode("declaraVar", i);
+        declaraVar.addChild( new ASTNode("dataType", t) );
+        RESULT = declaraVar;
+    :}
+    ;
+
+declaraVar ::= 
+    INT:t IDENTIFIER:i ASIG expresion:e {:
+        //construccion del nodo para el arbol sintactico
+        if(checkDeclaraVar(t,(ASTNode)e)){
+            listaVariables.addParameter(new ElementoTabla(i,(String) t));
+        }else{
+            System.out.println("Error al declarar variable "+i+": El tipo de la variable ("+t+") no coincide con el tipo del valor asignado o este no ha sido declarado");
+        }
+        ASTNode declaraVar = new ASTNode("declaraVar", i);
+        declaraVar.addChild( new ASTNode("dataType", t) );
+        declaraVar.addChild( (ASTNode)e);
+        RESULT = declaraVar;
+
+    :}  
+    |
+    CHAR:t IDENTIFIER:i  ASIG expresion:e {:
+        //construccion del nodo para el arbol sintactico
+        if(checkDeclaraVar(t,(ASTNode)e)){
+            listaVariables.addParameter(new ElementoTabla(i,(String) t));
+        }else{
+            System.out.println("Error al declarar variable "+i+": El tipo de la variable ("+t+") no coincide con el tipo del valor asignado o este no ha sido declarado");
+        }
+        ASTNode declaraVar = new ASTNode("declaraVar", i);
+        declaraVar.addChild( new ASTNode("dataType", t) );
+        declaraVar.addChild( (ASTNode)e);
+        RESULT = declaraVar;
+    :}
+    | declaraArray:d ASIG LBRACKET array:e RBRACKET{:
+        //construccion del nodo para el arbol sintactico
+        ((ASTNode)d).addChild( (ASTNode)e);
+        if(checkDeclaraArray((ASTNode)d)){
+            RESULT = (ASTNode)d;
+        }
+    :}
+    | tipo:t IDENTIFIER:i ASIG expresion:e {:
+        //construccion del nodo para el arbol sintactico
+        if(checkDeclaraVar((String)t,(ASTNode)e)){
+            listaVariables.addParameter(new ElementoTabla(i,(String) t));
+        }else{
+            System.out.println("Error al declarar variable "+i+": El tipo de la variable ("+t+") no coincide con el tipo del valor asignado o este no ha sido declarado");
+        }
+        ASTNode declaraVar = new ASTNode("declaraVar", i);
+        declaraVar.addChild( new ASTNode("dataType", t) );
+        declaraVar.addChild( (ASTNode)e);
+        RESULT = declaraVar;
+    :}
+    ;
+
+
+getValorArray ::= IDENTIFIER:e declaraArrayAux:d{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode res = new ASTNode("res");
+        ASTNode getValorArray = new ASTNode("getValorArray",e);
+        getValorArray.addChild(new ASTNode("posicion",d));
+        res.addChild(getValorArray);
+        RESULT = res;
+    :}
+    ;
+
+
+setValorArray ::= getValorArray:e ASIG expresion:ex{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode setValorArray = ((ASTNode)e).getChildren().get(0);
+        setValorArray.setType("setValorArray");
+        setValorArray.addChild(new ASTNode("value", (ASTNode)ex));
+        RESULT = setValorArray;
+    :}
+
+   ;
+
+
+lectura ::= 
+    LEER LPAREN numerico:n RPAREN{:
+        RESULT = n;
+    :}
+    | LEER LPAREN IDENTIFIER:n RPAREN{:
+        //construccion del nodo para el arbol sintactico
+        String tipoId = simboloValido(n);
+        if(tipoId.equals("int") || tipoId.equals("float")){
+            ASTNode argumentos = new ASTNode("argumentos");
+            ASTNode identifier = new ASTNode("IDENTIFIER",n);
+            //identifier.addChild(new ASTNode(n));
+            argumentos.addChild(identifier);
+            RESULT = argumentos;
+        }else{
+            System.out.println("Error: print +"+n+" debe ser de tipo int o float pero es tipo "+ tipoId);
+        }
+    :}
+    ;
+
+
+
+numerico ::= LITERAL_INT:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode literal_int = new ASTNode("literal_int");
+        literal_int.addChild(new ASTNode(e));
+        RESULT = literal_int;
+    :}
+    | LITERAL_FLOAT:e {:
+        //construccion del nodo para el arbol sintactico
+        ASTNode literal_int = new ASTNode("literal_float");
+        literal_int.addChild(new ASTNode(e));
+        RESULT = literal_int;
+    :}
+    ;
+
+
+escritura ::= ESCRIBIR LPAREN expresion:e RPAREN{:
+        //construccion del nodo para el arbol sintactico
+        ASTNode nodoValor = ((ASTNode)e).getChildren().get(0);
+        String tipoNodo = nodoValor.getType();
+        String valor;
+        if(tipoNodo.equals("IDENTIFIER")){
+            valor = nodoValor.getChildren().get(0).getValue().toString();
+        }else{
+            valor = nodoValor.getChildren().get(0).getType();
+        }
+        ASTNode argumento = new ASTNode("argumentos");
+        argumento.addChild(new ASTNode(tipoNodo,valor));
+        if(tipoNodo.equals("literal_int") || tipoNodo.equals("literal_float") || tipoNodo.equals("literal_string")){
+            RESULT = argumento;
+        }else if(tipoNodo.equals("IDENTIFIER")){
+            String tipoId = simboloValido(nodoValor.getChildren().get(0).getValue().toString());    
+            if(tipoId.equals("int") || tipoId.equals("float") || tipoId.equals("String")){
+                RESULT = argumento;
+            }
+        }else{
+            System.out.println("Error: print solo es compatible con int, float, y string");
+        }
+    :} ; 
+
+

@@ -1,0 +1,73 @@
+int test(int a, int b){
+	char arrays[2] = ['a']$	
+	int c[2] = [1,2]$
+	char t = 'a'$
+	arrays[2] = 'b'$
+	while(a>b){
+		for(int i=0$i>a$++i){
+			a = a-1$
+			if (a == 0){
+				print("entra al if")$
+			}
+			elif(true){
+				print(a)$
+				break$
+			}
+			elif(false^true){
+				read(a)$
+				break$
+			}else{
+				i =0$
+			}
+			
+		}
+	}
+	return a+b$
+}
+
+float miFunc (int dif, char otra){
+	int otrasS = 1$
+	int otrasSsd = 2+(3+4)$
+	int prueba = test(1,otrasS)$
+	int otras = -dif$
+	int otrase = -2$
+	String str = "Hola $%&/#$&) mundo"$
+	int var = 8$
+	for(int i=0$i>var$++i)
+	{
+		do
+		{
+			var = var-1$
+		}while(var>12 # (34+34)>12)$
+
+		if (var == 0)
+		{
+			print("entra al if")$
+		}
+		elif(true)
+		{
+			print(var)$
+		}
+		elif(false^true)
+		{
+			read(var)$
+			break$
+		}
+	}
+	return test(1,otrasS)$ @error
+}
+
+bool miOtraFun(){
+	return true$ @error
+}
+
+int main(){
+	int a[2] = [1,2]$
+	int b[2]$
+
+	b = [5,6]$
+	print("hola")$
+	print(34)$
+	print(6.7)$@solucionar negativos
+	return 1$
+}

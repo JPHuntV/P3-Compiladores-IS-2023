@@ -1,0 +1,30 @@
+
+
+Tabla: test  Tipo de retorno: int
+	valor: a    tipo: int
+	valor: b    tipo: int
+	valor: c    tipo: int
+	valor: t    tipo: char
+	valor: i    tipo: int
+	valor: arrays    tipo: char
+
+
+Tabla: miFunc  Tipo de retorno: float
+	valor: dif    tipo: int
+	valor: otra    tipo: char
+	valor: str    tipo: String
+	valor: otrasS    tipo: int
+	valor: var    tipo: int
+	valor: otrase    tipo: int
+	valor: i    tipo: int
+	valor: prueba    tipo: int
+	valor: otras    tipo: int
+	valor: otrasSsd    tipo: int
+
+
+Tabla: miOtraFun  Tipo de retorno: bool
+
+
+Tabla: main  Tipo de retorno: int
+	valor: a    tipo: int
+	valor: b    tipo: int
