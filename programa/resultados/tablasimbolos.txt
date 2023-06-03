@@ -3,10 +3,10 @@
 Tabla: test  Tipo de retorno: int
 	valor: a    tipo: int
 	valor: b    tipo: int
-	valor: c    tipo: int
-	valor: t    tipo: char
+	valor: ttt    tipo: char
+	valor: var    tipo: char
+	valor: testing    tipo: float
 	valor: i    tipo: int
-	valor: arrays    tipo: char
 
 
 Tabla: miFunc  Tipo de retorno: float
@@ -16,6 +16,7 @@ Tabla: miFunc  Tipo de retorno: float
 	valor: otrasS    tipo: int
 	valor: var    tipo: int
 	valor: otrase    tipo: int
+	valor: xxx    tipo: int
 	valor: i    tipo: int
 	valor: prueba    tipo: int
 	valor: otras    tipo: int

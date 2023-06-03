@@ -6,34 +6,46 @@ inicio {
         int: b
       }
       bloque {
-        declaraArray: arrays {
+        declaraVar: testing {
+          dataType: float
+          init {
+            literal_float {
+              1.2
+            }
+          }
+        }
+        asignacion: testing {
+          init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: +
+              left: literal_float {
+                1.2
+              }
+              right: literal_float {
+                2.3
+              }
+            }
+          }
+        }
+        declaraVar: ttt {
           dataType: char
-          size: 5
-          array {
-            init {
-              literal_char {
+        }
+        asignacion: ttt {
+          init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: +
+              left: literal_char {
                 'a'
               }
-            }
-          }
-        }
-        declaraArray: c {
-          dataType: int
-          size: 2
-          array {
-            init {
-              literal_int {
-                1
-              }
-            }
-            init {
-              literal_int {
-                2
+              right: literal_char {
+                'b'
               }
             }
           }
         }
-        declaraVar: t {
+        declaraVar: var {
           dataType: char
           init {
             literal_char {
@@ -41,11 +53,17 @@ inicio {
             }
           }
         }
-        setValorArray: arrays {
-          posicion: 2
-          value: init {
-            literal_char {
-              'b'
+        asignacion: var {
+          init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: +
+              left: IDENTIFIER {
+                valor: var
+              }
+              right: IDENTIFIER {
+                valor: ttt
+              }
             }
           }
         }
@@ -212,6 +230,35 @@ inicio {
           init {
             literal_int {
               1
+            }
+          }
+        }
+        asignacion: otrasS {
+          init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: +
+              left: literal_int {
+                2
+              }
+              right: IDENTIFIER {
+                valor: otrasS
+              }
+            }
+          }
+        }
+        declaraVar: xxx {
+          dataType: int
+          init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: +
+              left: IDENTIFIER {
+                valor: otrasS
+              }
+              right: literal_int {
+                2
+              }
             }
           }
         }

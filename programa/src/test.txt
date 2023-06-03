@@ -1,8 +1,13 @@
 int test(int a, int b){
-	char arrays[5] = ['a']$	
-	int c[2] = [1,2]$
-	char t = 'a'$
-	arrays[2] = 'b'$
+	@char arrays[5] = ['a']$	
+	@int c[2] = [1,2]$
+	float testing = 1.2$
+	testing = 1.2 + 2.3$
+	char ttt$
+	ttt = 'a' + 'b'$
+	char var = 'a'$
+	var = var + ttt$
+	@arrays[2] = 'b'$
 	while(a>b){
 		for(int i=0$i>a$++i){
 			a = a-1$
@@ -27,6 +32,8 @@ int test(int a, int b){
 
 float miFunc (int dif, char otra){
 	int otrasS = 1$
+	otrasS = 2 + otrasS$
+	int xxx = otrasS + 2$
 	int otrasSsd = 2+(3+4)$
 	int prueba = test(1,otrasS)$
 	int otras = -dif$
