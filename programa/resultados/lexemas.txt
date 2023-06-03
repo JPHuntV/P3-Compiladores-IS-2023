@@ -11,7 +11,7 @@ Token: 13	valor: {
 Token: 49	valor: char
 Token: 44	valor: arrays
 Token: 11	valor: [
-Token: 39	valor: 2
+Token: 39	valor: 5
 Token: 12	valor: ]
 Token: 10	valor: =
 Token: 11	valor: [
@@ -289,7 +289,7 @@ Token: 13	valor: {
 Token: 46	valor: int
 Token: 44	valor: a
 Token: 11	valor: [
-Token: 39	valor: 2
+Token: 39	valor: 7
 Token: 12	valor: ]
 Token: 10	valor: =
 Token: 11	valor: [
@@ -301,7 +301,7 @@ Token: 45	valor: $
 Token: 46	valor: int
 Token: 44	valor: b
 Token: 11	valor: [
-Token: 39	valor: 2
+Token: 39	valor: 4
 Token: 12	valor: ]
 Token: 45	valor: $
 Token: 44	valor: b

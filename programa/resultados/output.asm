@@ -1,0 +1,235 @@
+.data
+arrays: .space 20
+c: .space 8
+a: .space 28
+b: .space 16
+.text
+main:
+test:
+#declaracion de array
+t0 = 'a'
+arrays[0] = t0
+#declaracion de array
+t1 = 1
+t2 = 2
+c[0] = t1
+c[1] = t2
+dataChar t
+t3 = 'a'
+t = t3
+t4 = 'b'
+arrays[2] = t4
+_test_while1_eval:
+t5 = a
+t6 = b
+t7 = t5 > t6
+if t7 goto _test_while1_body
+goto _test_while1_end
+_test_while1_body:
+_test_for1_init:
+dataInt i
+t8 = 0
+i = t8
+_test_for1_eval:
+t9 = i
+t10 = a
+t11 = t9 > t10
+if t11 goto _test_for1_body
+goto _test_for1_end
+_test_for1_update:
+t12 = ++i
+goto _test_for1_eval
+_test_for1_body:
+t13 = a
+t14 = 1
+t15 = t13 - t14
+a = t15
+_test_if1_eval:
+t16 = a
+t17 = 0
+t18 = t16 == t17
+if t18 goto _test_if1_body
+goto _test_if1_else
+_test_if1_body:
+t19 = "entra al if"
+param t19
+call print, 1
+goto _test_if1_end
+_test_if1_elifStm:
+_test_elif1_eval:
+t21 = true
+if t21 goto _test_elif1_body
+goto _test_elif1_else
+_test_elif1_body:
+t22 = a
+param t22
+call print, 1
+goto _test_for1_end
+goto _test_elif1_end
+_test_elif1_else:
+_test_elif2_eval:
+t24 = false
+t25 = true
+t26 = t24 ^ t25
+if t26 goto _test_elif2_body
+goto _test_elif2_else
+_test_elif2_body:
+t27 = a
+param t27
+call read, 1
+goto _test_for1_end
+goto _test_elif2_end
+_test_elif2_else:
+goto _test_elif2_end
+_test_elif2_end:
+goto _test_elif1_end
+_test_elif1_end:
+_test_if1_else:
+_test_else1_body:
+t29 = 0
+i = t29
+goto _test_else1_end
+_test_else1_end:
+goto _test_if1_end
+_test_if1_end:
+goto _test_for1_update
+_test_for1_end:
+goto _test_while1_eval
+_test_while1_end:
+t30 = a
+t31 = b
+t32 = t30 + t31
+return t32
+miFunc:
+dataInt otrasS
+t33 = 1
+otrasS = t33
+dataInt otrasSsd
+t34 = 2
+t35 = 3
+t36 = 4
+t37 = t35 + t36
+t38 = t34 + t37
+otrasSsd = t38
+dataInt prueba
+t39 = 1
+t40 = otrasS
+param t39
+param t40
+t41 = call test, 2
+prueba = t41
+dataInt otras
+t42 = -dif
+otras = t42
+dataInt otrase
+t43 = -2
+otrase = t43
+dataString str
+t44 = "Hola $%&/#$&) mundo"
+str = t44
+dataInt var
+t45 = 8
+var = t45
+_miFunc_for1_init:
+dataInt i
+t46 = 0
+i = t46
+_miFunc_for1_eval:
+t47 = i
+t48 = var
+t49 = t47 > t48
+if t49 goto _miFunc_for1_body
+goto _miFunc_for1_end
+_miFunc_for1_update:
+t50 = ++i
+goto _miFunc_for1_eval
+_miFunc_for1_body:
+_miFunc_doWhile1_body:
+t51 = var
+t52 = 1
+t53 = t51 - t52
+var = t53
+_miFunc_doWhile1_eval:
+t54 = var
+t55 = 12
+t56 = t54 > t55
+t57 = 34
+t58 = 34
+t59 = t57 + t58
+t60 = 12
+t61 = t59 > t60
+t62 = t56 # t61
+if t62 goto _miFunc_doWhile1_body
+goto _miFunc_doWhile1_end
+_miFunc_doWhile1_end:
+_miFunc_if2_eval:
+t63 = var
+t64 = 0
+t65 = t63 == t64
+if t65 goto _miFunc_if2_body
+goto _miFunc_if2_else
+_miFunc_if2_body:
+t66 = "entra al if"
+param t66
+call print, 1
+goto _miFunc_if2_end
+_miFunc_if2_elifStm:
+_miFunc_elif3_eval:
+t68 = true
+if t68 goto _miFunc_elif3_body
+goto _miFunc_elif3_else
+_miFunc_elif3_body:
+t69 = var
+param t69
+call print, 1
+goto _miFunc_elif3_end
+_miFunc_elif3_else:
+_miFunc_elif4_eval:
+t71 = false
+t72 = true
+t73 = t71 ^ t72
+if t73 goto _miFunc_elif4_body
+goto _miFunc_elif4_else
+_miFunc_elif4_body:
+t74 = var
+param t74
+call read, 1
+goto _miFunc_for1_end
+goto _miFunc_elif4_end
+_miFunc_elif4_else:
+goto _miFunc_elif4_end
+_miFunc_elif4_end:
+goto _miFunc_elif3_end
+_miFunc_elif3_end:
+goto _miFunc_if2_end
+_miFunc_if2_end:
+goto _miFunc_for1_update
+_miFunc_for1_end:
+t76 = 1
+t77 = otrasS
+param t76
+param t77
+call test, 2
+return t78
+miOtraFun:
+t79 = true
+return t79
+main:
+#declaracion de array
+t80 = 1
+t81 = 2
+a[0] = t80
+a[1] = t81
+#declaracion de array
+b = t81
+t82 = "hola"
+param t82
+call print, 1
+t84 = 34
+param t84
+call print, 1
+t86 = 6.7
+param t86
+call print, 1
+t88 = 1
+return t88

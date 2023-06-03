@@ -86,7 +86,11 @@ public class App {
                 BufferedWriter writer3 = new BufferedWriter(new FileWriter("programa/resultados/codigoIntermedio.txt"));
                 writer3.write(intermediateCode);
                 writer3.close();
-                System.out.println("Codigo intermedio\n\n" + intermediateCode);
+                //System.out.println("Codigo intermedio\n\n" + intermediateCode);
+                //generar codigo mips
+                MIPSCodeGenerator mipsCodeGenerator = new MIPSCodeGenerator();
+                mipsCodeGenerator.generateMips();
+
             }else{
                 System.out.println("El archivo no puede ser generado ya que se han reportado errores");
                 writer.write("El archivo no puede ser generado ya que se han reportado errores");

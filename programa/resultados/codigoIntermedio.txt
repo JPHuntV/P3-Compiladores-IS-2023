@@ -1,7 +1,7 @@
 
 test:
 
-  dataArray arrays[2]
+  dataArray arrays[5]
   t0 = 'a'
   arrays[0] = t0
 
@@ -268,13 +268,13 @@ miOtraFun:
 
 main:
 
-  dataArray a[2]
+  dataArray a[7]
   t80 = 1
   t81 = 2
   a[0] = t80
   a[1] = t81
 
-  dataArray b[2]
+  dataArray b[4]
   b = t81
   t82 = "hola"
   param t82

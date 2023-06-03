@@ -8,7 +8,7 @@ inicio {
       bloque {
         declaraArray: arrays {
           dataType: char
-          size: 2
+          size: 5
           array {
             init {
               literal_char {
@@ -460,7 +460,7 @@ inicio {
       bloque {
         declaraArray: a {
           dataType: int
-          size: 2
+          size: 7
           array {
             init {
               literal_int {
@@ -476,7 +476,7 @@ inicio {
         }
         declaraArray: b {
           dataType: int
-          size: 2
+          size: 4
         }
         asignacion: b {
           init {
