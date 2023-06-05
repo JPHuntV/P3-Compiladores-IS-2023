@@ -1,8 +1,8 @@
 int test(int a, int b){
 	@char arrays[5] = ['a']$	
 	@int c[2] = [1,2]$
-	float testing = 1.2$
-	testing = 1.2 + 2.3$
+	@float testing = 1.2$
+	@testing = 1.2 + 2.3$
 	char ttt$
 	ttt = 'a' + 'b'$
 	char var = 'a'$
