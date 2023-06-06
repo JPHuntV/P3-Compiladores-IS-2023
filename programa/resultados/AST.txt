@@ -6,7 +6,7 @@ inicio {
           dataType: int
           init {
             literal_int {
-              1
+              6
             }
           }
         }

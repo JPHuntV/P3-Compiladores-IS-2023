@@ -2,7 +2,7 @@
 main:
 
   dataInt vara
-  t0 = 1
+  t0 = 6
   vara = t0
 
   dataInt varb

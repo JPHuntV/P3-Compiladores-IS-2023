@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.regex.*;
 
 
-import jflex.core.RegExp;
-
 public class MIPSCodeGenerator {
 
     private static FileWriter writer;
@@ -25,6 +23,8 @@ public class MIPSCodeGenerator {
     Map<String, String> dataTypesStores = new HashMap<String, String>();
     Map<String, String> dotDatMap = new HashMap<String, String>();
     Map<String, String> tempValues = new HashMap<String, String>();
+    Map<String, String> dataTypesTest = new HashMap<String, String>();
+    Map<String, String> interToGoal = new HashMap<String, String>();//<intermediate, goal> guardar los temporales del codigo intermedio con su equivalente en el codigo final
     //calling function stack list
     String[] callingFunctionStack = new String[100];
     ArrayList<String> paramStack = new ArrayList<String>();
@@ -113,6 +113,10 @@ public class MIPSCodeGenerator {
         }
         else if(instruction.startsWith("dataFloat")){
             code.append("#declaracion de float\n");
+            String nombreFloat = data[1];
+            dotData += nombreFloat + ": .float 0.0\n";
+            dotDatMap.put(nombreFloat, "float");
+            currentDataType = "float";
             return;
         }
         else if(instruction.startsWith("if")){
@@ -141,7 +145,10 @@ public class MIPSCodeGenerator {
             if(data[1].equals("print,")){
                 code.append("#print\n");
                 String param = paramStack.remove(paramStack.size()-1);
-                System.out.println(param);
+                //System.out.println(param);
+                String registroParam = interToGoal.get(param);
+                System.out.println(registroParam);
+                System.out.println(tempValues.get(registroParam));
                 //code.append( dataTypesLoads.get(dotDatMap.get(tempValues.get(param)))+", "+tempValues.get(param)+ " ---\n");
                 code.append("move $a0, $" + param+ "\n");
                 //code.append("li $v0, 1\n");
@@ -154,8 +161,6 @@ public class MIPSCodeGenerator {
                 
         }
         else if(instruction.startsWith("t")){
-            code.append("#declaracion de temporal\n");
-            code.append("#largo = " +data.length + "\n");
             if(largo == 3){
                 if(data[2].startsWith("++")){
                     code.append("lw $t" + tempCount + ", " + data[2].substring(2) + "\n");
@@ -170,26 +175,36 @@ public class MIPSCodeGenerator {
                     tempCount++;
                 }
                 else if(isStringFloat(data[2])){
-                    dotData += "float" + floatCount + ": .float " + data[2] + "\n";
-                    code.append("l.s $f" + floatTempCount + ", float" + floatCount + "\n");
-                    floatCount++;
+                    //dotData += "float" + floatCount + ": .float " + data[2] + "\n";
+                    code.append("li.s $f" + floatTempCount + ", " + data[2] + "\n");
+                    //floatCount++;
                     floatTempCount++;
                 }
                 else if(instruction.contains("= t") && largo == 3){
                     code.append("sb $t" + (tempCount) + ", " + data[2] + "\n");
                 }else{
-                    code.append(dataTypesLoads.get(dotDatMap.get(data[2])) + " $t" + tempCount + ", " + data[2] + "\n");
+                    String register = getRegisterAsig(dotDatMap.get(data[2])).substring(1);
+                    code.append(dataTypesLoads.get(dotDatMap.get(data[2]))+ " "+ register + ", " + data[2] + "\n");
                     //code.append("sb $t" + tempCount + ", " + data[0] + "\n");
-                    tempValues.put("t" + tempCount, data[2]);
-                    tempCount++;
+                    System.out.println("inter:"+ data[0] +" register:"+ register +    ",  data[2] = " + data[2]);
+                    tempValues.put(register, data[2]);
+
+                    interToGoal.put(data[0], register);
+                    //tempCount++;
                 }
             }
             else if(largo == 5){
                 String op = data[3];
                 code.append("#op = " + op + "\n");
                 if(op.equals("+")){
-                    code.append("add $t" + tempCount + ", $t" + (tempCount-2) + ", $t" + (tempCount-1) + "\n");
-                    tempCount++;
+                    if(currentDataType.equals("int")){
+                        code.append("add $t" + tempCount + ", $t" + (tempCount-2) + ", $t" + (tempCount-1) + "\n");
+                        tempCount++;
+                    }
+                    else if(currentDataType.equals("float")){
+                        code.append("add.s $f" + floatTempCount + ", $f" + (floatTempCount-2) + ", $f" + (floatTempCount-1) + "\n");
+                        floatTempCount++;
+                    }
                     //code.append("sb $t" + tempCount + ", " + data[0] + "\n");
                 }
                 else if(op.equals("-")){
@@ -236,8 +251,16 @@ public class MIPSCodeGenerator {
             return;
         }
         else if(asignacionTemp(instruction) && largo == 3){
-            code.append(dataTypesStores.get(currentDataType)+" $t" + (tempCount-1) + ", " + data[0] + "\n");
-        }
+            if(currentDataType.equals("int")){
+                code.append(dataTypesStores.get(currentDataType)+" $t" + (tempCount-1) + ", " + data[0] + "\n");
+            }
+            else if(currentDataType.equals("float")){
+                code.append(dataTypesStores.get(currentDataType)+" $f" + (floatTempCount-1) + ", " + data[0] + "\n");
+            }
+            
+        
+
+            }
 
         else{
 
@@ -282,18 +305,41 @@ public class MIPSCodeGenerator {
 
     public void InicializarDiccionarios(){
         dataTypesLoads.put("int", "lw");
-        dataTypesLoads.put("float", "l.s");
+        dataTypesLoads.put("float", "lwci");
         dataTypesLoads.put("char", "lb");
         dataTypesLoads.put("String", "la");
 
         dataTypesStores.put("int", "sw");
-        dataTypesStores.put("float", "s.s");
+        dataTypesStores.put("float", "swci");
         dataTypesStores.put("char", "sb");
         dataTypesStores.put("String", "la");
+
+
+        //dataTypesTest.put("int", "$t"+tempCount);
 
 
         for(int i = 0; i < 11; i++){
             this.tempValues.put("t" + i, "");
         }
+    }
+
+    public String getRegisterAsig(String dataType){
+        if(dataType.equals("int")){
+            tempCount++;
+            return " $t" + (tempCount-1);
+        }
+        else if(dataType.equals("float")){
+            floatTempCount++;
+            return " $f" + (floatTempCount-1);
+        }
+        else if(dataType.equals("char")){
+            tempCount++;
+            return " $t" + tempCount;
+        }
+        else if(dataType.equals("String")){
+            tempCount++;
+            return " $t" + tempCount;
+        }
+        return "";
     }
 }

@@ -1,5 +1,5 @@
 int main(){
-    int vara = 1$
+    int vara = 6$
     int varb = 2$
     @suma
     int varc = vara + varb$

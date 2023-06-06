@@ -6,7 +6,7 @@ Token: 13	valor: {
 Token: 46	valor: int
 Token: 44	valor: vara
 Token: 10	valor: =
-Token: 39	valor: 1
+Token: 39	valor: 6
 Token: 45	valor: $
 Token: 46	valor: int
 Token: 44	valor: varb
