@@ -1,6 +1,6 @@
 int main(){
     int vara = 6$
-    int varb = 2$
+    int varb = -2$
     @suma
     int varc = vara + varb$
     print(varc)$

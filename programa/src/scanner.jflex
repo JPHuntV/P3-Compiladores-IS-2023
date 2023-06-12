@@ -54,9 +54,9 @@ WhiteSpace = {LineTerminator} | [ \t\f]
 Comment = {EndOfLineComment}  
 EndOfLineComment = "@" {InputCharacter}* {LineTerminator}? 
 
-numero = 0 | [1-9][0-9]*
+numero = 0 | [-]?[1-9][0-9]*
 identificador = [a-zA-Z_] [a-zA-Z0-9_]*
-float    = [0-9]+ \. [0-9]*
+float    = [-]?[0-9]+ \. [0-9]*
 simbolo = "!" | "@" | "#"  | "%" | "^" | "&" | "*" 
     | "(" | ")" | "-" | "_" | "+" | "=" | "[" | "]" | "{" 
     | "}" | ";" | ":" | "\'" | '\"' | "," | "." | "<" | ">" 

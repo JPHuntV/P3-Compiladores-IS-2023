@@ -1,6 +1,0 @@
-
-
-Tabla: main  Tipo de retorno: int
-	valor: varc    tipo: int
-	valor: varb    tipo: int
-	valor: vara    tipo: int

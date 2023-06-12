@@ -513,7 +513,7 @@ non terminal  inicio, programa, main, funciones,expresion, opRelacional, operado
     operadorUnario, operadorLogico, expresionAritmetica, expresionRelacional, expresionLogica, 
     terminoLogico, operandoArit, operandoRel, array, if, elif, while, doWhile, 
     for, estructuraControl, return, break, argumentos, llamaFuncion, asignacion, sentencia, bloque, 
-    parametros, declaraFuncion,tipo, declaraArray, declaraArrayAux, declaraVar, declaraVarNoAsig, getValorArray, 
+    parametros, declaraFuncion, tipoFuncion, tipo, declaraArray, declaraArrayAux, declaraVar, declaraVarNoAsig, getValorArray, 
     setValorArray, lectura, numerico, escritura, literales, argumento,  else;
 
 
@@ -695,16 +695,17 @@ opRelacional ::= MENOR:e {:RESULT = e;:}
     ;
 
 
-operadorUnario ::= MENOS:op numerico:e  {:
-        //construccion del nodo para el arbol sintactico
-        ASTNode expresionUnaria = new ASTNode("tipo","expresionNumerica");
-        ASTNode operador = new ASTNode("operador",op);
-        ASTNode res = new ASTNode("res");
-        res.addChild((ASTNode)expresionUnaria);
-        res.addChild((ASTNode)operador);
-        res.addChild(new ASTNode("value", (ASTNode)e));
-        RESULT = res;
-    :} %prec uminus
+operadorUnario ::=
+    //MENOS:op numerico:e  {:
+    //    //construccion del nodo para el arbol sintactico
+    //    ASTNode expresionUnaria = new ASTNode("tipo","expresionNumerica");
+    //    ASTNode operador = new ASTNode("operador",op);
+    //    ASTNode res = new ASTNode("res");
+    //    res.addChild((ASTNode)expresionUnaria);
+    //    res.addChild((ASTNode)operador);
+    //    res.addChild(new ASTNode("value", (ASTNode)e));
+    //    RESULT = res;
+    //:} %prec uminus
     |MENOS:op IDENTIFIER:e  {:
         //construccion del nodo para el arbol sintactico
         ASTNode expresionUnaria = new ASTNode("tipo","IDENTIFIER");
@@ -1082,7 +1083,6 @@ for ::= FOR LPAREN declaraVar:d DOLLAR expresionLogica:exp DOLLAR expresion:e  R
 
 //alternate funciona como else, cada else if y else se agrega como alternate
 estructuraControl ::= if:f{:
-        ((ASTNode)f).addChild(new ASTNode("alternate", null));
         RESULT = f;
     :}
     |if:f elif:e {:
@@ -1301,7 +1301,7 @@ parametros ::=
     ;
 
 
-declaraFuncion ::= tipo:t IDENTIFIER:e LPAREN parametros:p RPAREN LBRACE bloque:b RBRACE 
+declaraFuncion ::= tipoFuncion:t IDENTIFIER:e LPAREN parametros:p RPAREN LBRACE bloque:b RBRACE 
     {:
         //construccion del nodo para el arbol sintactico
         boolean valida = true;
@@ -1361,7 +1361,7 @@ declaraFuncion ::= tipo:t IDENTIFIER:e LPAREN parametros:p RPAREN LBRACE bloque:
         if(valida) RESULT = main;  
     :}
 
-    | tipo:t IDENTIFIER:e LPAREN RPAREN LBRACE bloque:b RBRACE
+    | tipoFuncion:t IDENTIFIER:e LPAREN RPAREN LBRACE bloque:b RBRACE
     {:
         //construccion del nodo para el arbol sintactico
         boolean valida = true;
@@ -1423,6 +1423,11 @@ declaraFuncion ::= tipo:t IDENTIFIER:e LPAREN parametros:p RPAREN LBRACE bloque:
 
 
 
+tipoFuncion::=
+    INT:t {: RESULT = t; :}
+    | FLOAT:t {: RESULT = t; :}
+    | BOOL:t {: RESULT = t; :}
+    ;
 
 tipo ::= INT:e {:RESULT = e;:}
     | CHAR:e {: RESULT = e;:}

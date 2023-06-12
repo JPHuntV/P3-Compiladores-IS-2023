@@ -900,8 +900,7 @@ public class Analizador implements sym, java_cup.runtime.Scanner {
           // fall through
           case 69: break;
           case 14:
-            { System.out.println("found numero");
-      return symbol(LITERAL_INT, yytext());
+            { return symbol(LITERAL_INT, yytext());
             }
           // fall through
           case 70: break;

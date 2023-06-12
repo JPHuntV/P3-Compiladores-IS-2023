@@ -1,50 +1,366 @@
 inicio {
   programa {
-    declaraFuncion: main {
+    declaraFuncion: func1 {
+      parametros {
+        char: x23
+      }
       bloque {
-        declaraVar: vara {
+        declaraVar: x22 {
           dataType: int
-          init {
-            literal_int {
-              6
-            }
-          }
         }
-        declaraVar: varb {
-          dataType: int
-          init {
-            literal_int {
-              2
-            }
-          }
-        }
-        declaraVar: varc {
-          dataType: int
-          init {
-            expresionBinaria {
-              tipo: expresionAritmetica
-              operador: +
+        estructuraControl {
+          tipo: ifStm
+          eval: expresionBinaria {
+            tipo: expresionLogica
+            operador: #
+            left: expresionBinaria {
+              tipo: expresionRelacional
+              operador: <=
               left: IDENTIFIER {
-                valor: vara
+                valor: x22
               }
-              right: IDENTIFIER {
-                valor: varb
+              right: literal_int {
+                45
+              }
+            }
+            right: expresionBinaria {
+              tipo: expresionRelacional
+              operador: >
+              left: IDENTIFIER {
+                valor: var
+              }
+              right: literal_float {
+                5.6
               }
             }
           }
-        }
-        expresion {
-          llamaFuncion {
-            nombre: print
-            argumentos {
-              IDENTIFIER: varc
+          body: bloque {
+            asignacion: x22 {
+              init {
+                literal_int {
+                  10
+                }
+              }
+            }
+            declaraVar: ch33 {
+              dataType: char
+              init {
+                literal_char {
+                  'a'
+                }
+              }
+            }
+          }
+          alternate: estructuraControl {
+            tipo: elseStm
+            body: bloque {
+              declaraVar: str2 {
+                dataType: String
+                init {
+                  literal_string {
+                    "sdff"
+                  }
+                }
+              }
             }
           }
         }
         returnStm {
           value {
             literal_int {
-              0
+              5
+            }
+          }
+        }
+      }
+      dataType: int
+    }
+    declaraFuncion: func2 {
+      parametros {
+        bool: b1
+        int: i1
+      }
+      bloque {
+        returnStm {
+          value {
+            literal_bool {
+              false
+            }
+          }
+        }
+      }
+      dataType: bool
+    }
+    declaraFuncion: func3 {
+      parametros {
+        String: b1
+      }
+      bloque {
+        returnStm {
+          value {
+            literal_bool {
+              true
+            }
+          }
+        }
+      }
+      dataType: bool
+    }
+    declaraFuncion: main {
+      bloque {
+        declaraVar: miChar {
+          dataType: char
+          init {
+            literal_char {
+              'a'
+            }
+          }
+        }
+        declaraVar: miChar2 {
+          dataType: char
+          init {
+            literal_char {
+              '!'
+            }
+          }
+        }
+        declaraVar: str1 {
+          dataType: String
+          init {
+            literal_string {
+              "Mi String 1"
+            }
+          }
+        }
+        declaraVar: fl1 {
+          dataType: float
+        }
+        declaraVar: fl3 {
+          dataType: float
+          init {
+            literal_float {
+              56.6
+            }
+          }
+        }
+        declaraVar: in2 {
+          dataType: int
+          init {
+            literal_int {
+              5
+            }
+          }
+        }
+        declaraVar: in1 {
+          dataType: int
+          init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: -
+              left: expresionBinaria {
+                tipo: expresionAritmetica
+                operador: +
+                left: expresionBinaria {
+                  tipo: expresionAritmetica
+                  operador: /
+                  left: expresionBinaria {
+                    tipo: expresionAritmetica
+                    operador: *
+                    left: IDENTIFIER {
+                      valor: in2
+                    }
+                    right: literal_int {
+                      14
+                    }
+                  }
+                  right: IDENTIFIER {
+                    valor: in2
+                  }
+                }
+                right: literal_int {
+                  7
+                }
+              }
+              right: literal_int {
+                15
+              }
+            }
+          }
+        }
+        declaraVar: fl2 {
+          dataType: float
+          init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: +
+              left: expresionBinaria {
+                tipo: expresionAritmetica
+                operador: **
+                left: literal_float {
+                  3.7
+                }
+                right: IDENTIFIER {
+                  valor: fl3
+                }
+              }
+              right: expresionBinaria {
+                tipo: expresionAritmetica
+                operador: ~
+                left: literal_float {
+                  45.6
+                }
+                right: literal_int {
+                  76
+                }
+              }
+            }
+          }
+        }
+        declaraArray: arr {
+          dataType: int
+          size: 2
+        }
+        setValorArray: arr {
+          posicion: 1
+          value: init {
+            literal_string {
+              "str"
+            }
+          }
+        }
+        declaraArray: arr2 {
+          dataType: char
+          size: 3
+        }
+        setValorArray: arr {
+          posicion: 0
+          value: init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: *
+              left: literal_int {
+                5
+              }
+              right: literal_int {
+                5
+              }
+            }
+          }
+        }
+        setValorArray: arr {
+          posicion: 1
+          value: init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: *
+              left: expresionBinaria {
+                tipo: expresionAritmetica
+                operador: -
+                left: literal_int {
+                  10
+                }
+                right: res {
+                  getValorArray: arr {
+                    posicion: 0
+                  }
+                }
+              }
+              right: llamaFuncion {
+                nombre: func1
+                argumentos {
+                  literal_char: 'a'
+                }
+              }
+            }
+          }
+        }
+        asignacion: fl1 {
+          init {
+            expresionBinaria {
+              tipo: expresionAritmetica
+              operador: **
+              left: expresionBinaria {
+                tipo: expresionAritmetica
+                operador: ~
+                left: literal_float {
+                  4.5
+                }
+                right: IDENTIFIER {
+                  valor: fl3
+                }
+              }
+              right: literal_float {
+                0.005
+              }
+            }
+          }
+        }
+        asignacion: in1 {
+          init {
+            llamaFuncion {
+              nombre: func1
+              argumentos {
+                IDENTIFIER: miChar
+              }
+            }
+          }
+        }
+        declaraVar: bl0 {
+          dataType: bool
+          init {
+            literal_bool {
+              false
+            }
+          }
+        }
+        declaraVar: bl1 {
+          dataType: bool
+          init {
+            expresionBinaria {
+              tipo: expresionLogica
+              operador: ^
+              left: expresionBinaria {
+                tipo: expresionLogica
+                operador: #
+                left: expresionBinaria {
+                  tipo: expresionRelacional
+                  operador: >=
+                  left: IDENTIFIER {
+                    valor: in1
+                  }
+                  right: IDENTIFIER {
+                    valor: fl1
+                  }
+                }
+                right: literal_bool {
+                  false
+                }
+              }
+              right: res {
+                notOp {
+                  expresionBinaria {
+                    tipo: expresionRelacional
+                    operador: >
+                    left: llamaFuncion {
+                      nombre: func2
+                      argumentos {
+                        literal_int: 3
+                        IDENTIFIER: in1
+                      }
+                    }
+                    right: literal_int {
+                      56
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        returnStm {
+          value {
+            literal_int {
+              1
             }
           }
         }

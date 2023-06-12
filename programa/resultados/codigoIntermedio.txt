@@ -1,21 +1,129 @@
 
+func1:
+
+  dataInt x22
+
+_func1_if1_eval:
+  t0 = x22
+  t1 = 45
+  t2 = t0 <= t1
+  t3 = var
+  t4 = 5.6
+  t5 = t3 > t4
+  t6 = t2 # t5
+  if t6 goto _func1_if1_body
+  goto _func1_if1_else
+
+_func1_if1_body:
+  t7 = 10
+  x22 = t7
+
+  dataChar ch33
+  t8 = 'a'
+  ch33 = t8
+  goto _func1_if1_end
+
+_func1_if1_elseStm:
+
+_func1_else1_body:
+
+  dataString str2
+  t9 = "sdff"
+  str2 = t9
+  goto _func1_else1_end
+
+_func1_else1_end:
+  goto _func1_if1_end
+
+_func1_if1_end:
+  t10 = 5
+  return t10
+
+func2:
+  t11 = false
+  return t11
+
+func3:
+  t12 = true
+  return t12
+
 main:
 
-  dataInt vara
-  t0 = 6
-  vara = t0
+  dataChar miChar
+  t13 = 'a'
+  miChar = t13
 
-  dataInt varb
-  t1 = 2
-  varb = t1
+  dataChar miChar2
+  t14 = '!'
+  miChar2 = t14
 
-  dataInt varc
-  t2 = vara
-  t3 = varb
-  t4 = t2 + t3
-  varc = t4
-  t5 = varc
-  param t5
-  call print, 1
-  t7 = 0
-  return t7
+  dataString str1
+  t15 = "Mi String 1"
+  str1 = t15
+
+  dataFloat fl1
+
+  dataFloat fl3
+  t16 = 56.6
+  fl3 = t16
+
+  dataInt in2
+  t17 = 5
+  in2 = t17
+
+  dataInt in1
+  t18 = in2
+  t19 = 14
+  t20 = t18 * t19
+  t21 = in2
+  t22 = t20 / t21
+  t23 = 7
+  t24 = t22 + t23
+  t25 = 15
+  t26 = t24 - t25
+  in1 = t26
+
+  dataFloat fl2
+  t27 = 3.7
+  t28 = fl3
+  t29 = t27 ** t28
+  t30 = 45.6
+  t31 = 76
+  t32 = t30 ~ t31
+  t33 = t29 + t32
+  fl2 = t33
+
+  dataArray arr[2]
+  t34 = "str"
+  arr[1] = t34
+
+  dataArray arr2[3]
+  t35 = tipo
+  arr[0] = t35
+  t36 = tipo
+  arr[1] = t36
+  t37 = 4.5
+  t38 = fl3
+  t39 = t37 ~ t38
+  t40 = 0.005
+  t41 = t39 ** t40
+  fl1 = t41
+  t42 = miChar
+  param t42
+  t43 = call func1, 1
+  in1 = t43
+
+  dataBool bl0
+  t44 = false
+  bl0 = t44
+
+  dataBool bl1
+  t45 = in1
+  t46 = fl1
+  t47 = t45 >= t46
+  t48 = false
+  t49 = t47 # t48
+  t50 = t49 ^ t49
+  bl1 = t50
+  t51 = 1
+  return t51
