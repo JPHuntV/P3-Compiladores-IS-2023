@@ -52,13 +52,44 @@ inicio {
             }
           }
           alternate: estructuraControl {
-            tipo: elseStm
+            tipo: elifStm
+            eval: literal_bool {
+              true
+            }
             body: bloque {
               declaraVar: str2 {
                 dataType: String
                 init {
                   literal_string {
                     "sdff"
+                  }
+                }
+              }
+            }
+            alternate: estructuraControl {
+              tipo: elifStm
+              eval: literal_bool {
+                true
+              }
+              body: bloque {
+                declaraVar: str22 {
+                  dataType: String
+                  init {
+                    literal_string {
+                      "sdff"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          alternate: estructuraControl {
+            tipo: elseStm
+            body: bloque {
+              returnStm {
+                value {
+                  literal_int {
+                    0
                   }
                 }
               }

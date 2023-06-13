@@ -12,7 +12,7 @@ _func1_if1_eval:
   t5 = t3 > t4
   t6 = t2 # t5
   if t6 goto _func1_if1_body
-  goto _func1_if1_else
+  goto _func1_if1_alter
 
 _func1_if1_body:
   t7 = 10
@@ -23,107 +23,138 @@ _func1_if1_body:
   ch33 = t8
   goto _func1_if1_end
 
-_func1_if1_elseStm:
+_func1_if1_alter:
 
-_func1_else1_body:
+_func1_elif1_eval:
+  t9 = true
+  if t9 goto _func1_elif1_body
+  goto _func1_elif1_alter
+
+_func1_elif1_body:
 
   dataString str2
-  t9 = "sdff"
-  str2 = t9
+  t10 = "sdff"
+  str2 = t10
+  goto _func1_elif1_end
+
+_func1_elif1_alter:
+
+_func1_elif2_eval:
+  t11 = true
+  if t11 goto _func1_elif2_body
+  goto _func1_elif2_end
+
+_func1_elif2_body:
+
+  dataString str22
+  t12 = "sdff"
+  str22 = t12
+  goto _func1_elif2_end
+
+_func1_elif2_end:
+  goto _func1_if1_else
+
+_func1_elif1_end:
+  goto _func1_if1_end
+
+_func1_if1_else:
+
+_func1_else1_body:
+  t13 = 0
+  return t13
   goto _func1_else1_end
 
 _func1_else1_end:
-  goto _func1_if1_end
 
 _func1_if1_end:
-  t10 = 5
-  return t10
+  t14 = 5
+  return t14
 
 func2:
-  t11 = false
-  return t11
+  t15 = false
+  return t15
 
 func3:
-  t12 = true
-  return t12
+  t16 = true
+  return t16
 
 main:
 
   dataChar miChar
-  t13 = 'a'
-  miChar = t13
+  t17 = 'a'
+  miChar = t17
 
   dataChar miChar2
-  t14 = '!'
-  miChar2 = t14
+  t18 = '!'
+  miChar2 = t18
 
   dataString str1
-  t15 = "Mi String 1"
-  str1 = t15
+  t19 = "Mi String 1"
+  str1 = t19
 
   dataFloat fl1
 
   dataFloat fl3
-  t16 = 56.6
-  fl3 = t16
+  t20 = 56.6
+  fl3 = t20
 
   dataInt in2
-  t17 = 5
-  in2 = t17
+  t21 = 5
+  in2 = t21
 
   dataInt in1
-  t18 = in2
-  t19 = 14
-  t20 = t18 * t19
-  t21 = in2
-  t22 = t20 / t21
-  t23 = 7
-  t24 = t22 + t23
-  t25 = 15
-  t26 = t24 - t25
-  in1 = t26
+  t22 = in2
+  t23 = 14
+  t24 = t22 * t23
+  t25 = in2
+  t26 = t24 / t25
+  t27 = 7
+  t28 = t26 + t27
+  t29 = 15
+  t30 = t28 - t29
+  in1 = t30
 
   dataFloat fl2
-  t27 = 3.7
-  t28 = fl3
-  t29 = t27 ** t28
-  t30 = 45.6
-  t31 = 76
-  t32 = t30 ~ t31
-  t33 = t29 + t32
-  fl2 = t33
+  t31 = 3.7
+  t32 = fl3
+  t33 = t31 ** t32
+  t34 = 45.6
+  t35 = 76
+  t36 = t34 ~ t35
+  t37 = t33 + t36
+  fl2 = t37
 
   dataArray arr[2]
-  t34 = "str"
-  arr[1] = t34
+  t38 = "str"
+  arr[1] = t38
 
   dataArray arr2[3]
-  t35 = tipo
-  arr[0] = t35
-  t36 = tipo
-  arr[1] = t36
-  t37 = 4.5
-  t38 = fl3
-  t39 = t37 ~ t38
-  t40 = 0.005
-  t41 = t39 ** t40
-  fl1 = t41
-  t42 = miChar
-  param t42
-  t43 = call func1, 1
-  in1 = t43
+  t39 = tipo
+  arr[0] = t39
+  t40 = tipo
+  arr[1] = t40
+  t41 = 4.5
+  t42 = fl3
+  t43 = t41 ~ t42
+  t44 = 0.005
+  t45 = t43 ** t44
+  fl1 = t45
+  t46 = miChar
+  param t46
+  t47 = call func1, 1
+  in1 = t47
 
   dataBool bl0
-  t44 = false
-  bl0 = t44
+  t48 = false
+  bl0 = t48
 
   dataBool bl1
-  t45 = in1
-  t46 = fl1
-  t47 = t45 >= t46
-  t48 = false
-  t49 = t47 # t48
-  t50 = t49 ^ t49
-  bl1 = t50
-  t51 = 1
-  return t51
+  t49 = in1
+  t50 = fl1
+  t51 = t49 >= t50
+  t52 = false
+  t53 = t51 # t52
+  t54 = t53 ^ t53
+  bl1 = t54
+  t55 = 1
+  return t55

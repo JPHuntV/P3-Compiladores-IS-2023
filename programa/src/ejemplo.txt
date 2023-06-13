@@ -3,8 +3,12 @@ int func1(char x23){
 	if (x22 <= 45 # var > 5.6){ @semantico x22, var
 		x22 = 10$
 		char ch33 = 'a'$
-	} else {
+	} elif(true) {
 		String str2 = "sdff"$
+	}elif(true) {
+		String str22 = "sdff"$
+	}else{
+		return 0$ @semantico
 	}
 
 	return 5$ @cambio en retorno genera semantico

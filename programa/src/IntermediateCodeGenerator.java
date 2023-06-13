@@ -297,7 +297,13 @@ public class IntermediateCodeGenerator {
                     temp.addChild((ASTNode)hijosEstructuraControl.get(1).getValue());
                     generateCode(temp);
                     code.append("  if t"+(tempCount-1)+" goto _"+funcionActual+"_if"+ifActual+"_body\n");
-                    code.append("  goto _"+funcionActual+"_if"+ifActual+"_else\n");
+                    if(hijosEstructuraControl.size() >= 4){
+                        code.append("  goto _"+funcionActual+"_if"+ifActual+"_alter\n");
+                    }
+                    else{
+                        code.append("  goto _"+funcionActual+"_if"+ifActual+"_end\n");
+                    }
+                    //code.append("  goto _"+funcionActual+"_if"+ifActual+"_else\n");
 
                     System.out.println("_"+funcionActual+"_if"+ifActual+"_body:");
                     code.append("\n_"+funcionActual+"_if"+ifActual+"_body:\n");
@@ -306,7 +312,8 @@ public class IntermediateCodeGenerator {
 
                     if(hijosEstructuraControl.size() >= 4){
                         System.out.println("_"+funcionActual+"_if"+ifActual+"_else:");
-                        code.append("\n_"+funcionActual+"_if"+ifActual+"_"+((ASTNode)hijosEstructuraControl.get(3).getValue()).getChildren().get(0).getValue().toString()+":\n");
+                        code.append("\n_"+funcionActual+"_if"+ifActual+"_alter:\n");
+                        //code.append("\n_"+funcionActual+"_if"+ifActual+"_"+((ASTNode)hijosEstructuraControl.get(3).getValue()).getChildren().get(0).getValue().toString().substring(0, 4)+":\n");
                         temp =  new ASTNode("");
                         temp.addChild((ASTNode)hijosEstructuraControl.get(3).getValue());
                         generateCode(temp);
@@ -320,7 +327,6 @@ public class IntermediateCodeGenerator {
                         }
 
                     }
-                    code.append("  goto _"+funcionActual+"_if"+ifActual+"_end\n");
                     System.out.println("_"+funcionActual+"_if"+ifActual+"_end:");
                     code.append("\n_"+funcionActual+"_if"+ifActual+"_end:\n");
                     
@@ -334,24 +340,34 @@ public class IntermediateCodeGenerator {
                     temp.addChild((ASTNode)hijosEstructuraControl.get(1).getValue());
                     generateCode(temp);
                     code.append("  if t"+(tempCount-1)+" goto _"+funcionActual+"_elif"+elifActual+"_body\n");
-                    code.append("  goto _"+funcionActual+"_elif"+elifActual+"_else\n");
+                    if(hijosEstructuraControl.size() == 4){
+                        code.append("  goto _"+funcionActual+"_elif"+elifActual+"_alter\n");
+                    }
+                    else{
+                        code.append("  goto _"+funcionActual+"_elif"+elifActual+"_end\n");
+                    }
+                    //code.append("  goto _"+funcionActual+"_elif"+elifActual+"_alter\n");
 
                     System.out.println("_"+funcionActual+"_elif"+elifActual+"_body:");
                     code.append("\n_"+funcionActual+"_elif"+elifActual+"_body:\n");
                     generateCode((ASTNode)hijosEstructuraControl.get(2).getValue());
                     code.append("  goto _"+funcionActual+"_elif"+elifActual+"_end\n");
 
-                    System.out.println("_"+funcionActual+"_elif"+elifActual+"_else:");
-                    code.append("\n_"+funcionActual+"_elif"+elifActual+"_else:\n");
                     if(hijosEstructuraControl.size() == 4){
+                        System.out.println("_"+funcionActual+"_elif"+elifActual+"_else:");
+                        code.append("\n_"+funcionActual+"_elif"+elifActual+"_alter:\n");
                         temp =  new ASTNode("");
                         temp.addChild((ASTNode)hijosEstructuraControl.get(3).getValue());
                         generateCode(temp);
                     }    
-                    code.append("  goto _"+funcionActual+"_elif"+elifActual+"_end\n");
 
                     System.out.println("_"+funcionActual+"_elif"+elifActual+"_end:");
                     code.append("\n_"+funcionActual+"_elif"+elifActual+"_end:\n");
+                    if(hijosEstructuraControl.size() == 3){
+                        code.append("  goto _"+funcionActual+"_if"+ifCount+"_else\n");
+                    }else{
+                        code.append("  goto _"+funcionActual+"_if"+ifCount+"_end\n");
+                    }
                     
                 }
                 else if(hijosEstructuraControl.get(0).getValue().equals("elseStm")){
