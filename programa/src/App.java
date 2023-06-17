@@ -88,8 +88,10 @@ public class App {
                 writer3.close();
                 //System.out.println("Codigo intermedio\n\n" + intermediateCode);
                 //generar codigo mips
-                MIPSCodeGenerator mipsCodeGenerator = new MIPSCodeGenerator();
-                mipsCodeGenerator.generateMips();
+                
+                
+                //MIPSCodeGenerator mipsCodeGenerator = new MIPSCodeGenerator();
+                //mipsCodeGenerator.generateMips();
 
             }else{
                 System.out.println("El archivo no puede ser generado ya que se han reportado errores");

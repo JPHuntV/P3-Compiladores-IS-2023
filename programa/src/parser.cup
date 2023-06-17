@@ -96,7 +96,7 @@ parser code {:
         String valor = node.getChildren().get(0).getType();
         switch (valor) {
             case "literal_int":
-                return tipo.equals("int") || tipo.equals("float");
+                return tipo.equals("int");
             case "literal_bool":
                 return tipo.equals("bool");
             case "literal_string":
@@ -169,20 +169,14 @@ parser code {:
                 if(tipoOp.equals("literal_int")){
                     return "int";
                 }
-                else if(tipoOp.equals("literal_float")){
-                    return "float";
-                }
                 else if(checkExpresionAux(right, "int")){
                     return "int";
-                }
-                else if(checkExpresionAux(right, "float")){
-                    return "float";
                 }
                 else{
                     return "invalida";
                 }
             case "literal_string":
-                if(tipoOp.equals("literal_string") || tipoOp.equals("literal_char")){
+                if(tipoOp.equals("literal_string")){
                     return "String";
                 }
                 else{
@@ -194,11 +188,11 @@ parser code {:
                     }
                 }
             case "literal_float":
-                if(tipoOp.equals("literal_int") || tipoOp.equals("literal_float")){
+                if( tipoOp.equals("literal_float")){
                     return "float";
                 }
                 else{
-                    if(checkExpresionAux(right, "int") || checkExpresionAux(right, "float")){
+                    if(checkExpresionAux(right, "float")){
                         return "float";
                     }
                     else{
@@ -407,13 +401,13 @@ parser code {:
                                 res = e.getType().equals("String");
                                 break;
                             case "literal_int":
-                                res = e.getType().equals("int") || e.getType().equals("float");
+                                res = e.getType().equals("int") ;
                                 break;
                             case "literal_float":
                                 res = e.getType().equals("float");
                                 break;
                             case "literal_char":
-                                res = e.getType().equals("char") || e.getType().equals("String");
+                                res = e.getType().equals("char") ;
                                 break;
                             case "llamaFuncion":
                                 String funNameNest = ((ASTNode)valorArg).getChildren().get(0).getValue().toString();

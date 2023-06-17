@@ -1,160 +1,60 @@
 
-func1:
+funcA:
 
-  dataInt x22
+_funcA_doWhile1_body:
 
-_func1_if1_eval:
-  t0 = x22
-  t1 = 45
-  t2 = t0 <= t1
-  t3 = var
-  t4 = 5.6
-  t5 = t3 > t4
-  t6 = t2 # t5
-  if t6 goto _func1_if1_body
-  goto _func1_if1_alter
+_funcA_if1_eval:
+  t0 = num1
+  t1 = 99
+  t2 = t0 > t1
+  t3 = num2
+  t4 = 55
+  t5 = t3 < t4
+  t6 = t2 ^ t5
+  if t6 goto _funcA_if1_body
+  goto _funcA_if1_alter
 
-_func1_if1_body:
-  t7 = 10
-  x22 = t7
+_funcA_if1_body:
+  t7 = num2
+  t8 = -22
+  t9 = t7 - t8
+  num2 = t9
+  goto _funcA_if1_end
 
-  dataChar ch33
-  t8 = 'a'
-  ch33 = t8
-  goto _func1_if1_end
+_funcA_if1_alter:
 
-_func1_if1_alter:
+_funcA_elif1_eval:
+  t10 = num1
+  t11 = 100
+  t12 = t10 == t11
+  if t12 goto _funcA_elif1_body
+  goto _funcA_elif1_end
 
-_func1_elif1_eval:
-  t9 = true
-  if t9 goto _func1_elif1_body
-  goto _func1_elif1_alter
+_funcA_elif1_body:
+  t13 = num1
+  t14 = 11
+  t15 = t13 ** t14
+  t16 = 33
+  t17 = t15 ~ t16
+  num1 = t17
+  goto _funcA_elif1_end
 
-_func1_elif1_body:
+_funcA_elif1_end:
+  goto _funcA_if1_else
 
-  dataString str2
-  t10 = "sdff"
-  str2 = t10
-  goto _func1_elif1_end
+_funcA_if1_end:
 
-_func1_elif1_alter:
+_funcA_doWhile1_eval:
+  t18 = num1
+  t19 = num2
+  t20 = t18 < t19
+  if t20 goto _funcA_doWhile1_body
+  goto _funcA_doWhile1_end
 
-_func1_elif2_eval:
-  t11 = true
-  if t11 goto _func1_elif2_body
-  goto _func1_elif2_end
-
-_func1_elif2_body:
-
-  dataString str22
-  t12 = "sdff"
-  str22 = t12
-  goto _func1_elif2_end
-
-_func1_elif2_end:
-  goto _func1_if1_else
-
-_func1_elif1_end:
-  goto _func1_if1_end
-
-_func1_if1_else:
-
-_func1_else1_body:
-  t13 = 0
-  return t13
-  goto _func1_else1_end
-
-_func1_else1_end:
-
-_func1_if1_end:
-  t14 = 5
-  return t14
-
-func2:
-  t15 = false
-  return t15
-
-func3:
-  t16 = true
-  return t16
+_funcA_doWhile1_end:
+  t21 = num1
+  return t21
 
 main:
-
-  dataChar miChar
-  t17 = 'a'
-  miChar = t17
-
-  dataChar miChar2
-  t18 = '!'
-  miChar2 = t18
-
-  dataString str1
-  t19 = "Mi String 1"
-  str1 = t19
-
-  dataFloat fl1
-
-  dataFloat fl3
-  t20 = 56.6
-  fl3 = t20
-
-  dataInt in2
-  t21 = 5
-  in2 = t21
-
-  dataInt in1
-  t22 = in2
-  t23 = 14
-  t24 = t22 * t23
-  t25 = in2
-  t26 = t24 / t25
-  t27 = 7
-  t28 = t26 + t27
-  t29 = 15
-  t30 = t28 - t29
-  in1 = t30
-
-  dataFloat fl2
-  t31 = 3.7
-  t32 = fl3
-  t33 = t31 ** t32
-  t34 = 45.6
-  t35 = 76
-  t36 = t34 ~ t35
-  t37 = t33 + t36
-  fl2 = t37
-
-  dataArray arr[2]
-  t38 = "str"
-  arr[1] = t38
-
-  dataArray arr2[3]
-  t39 = tipo
-  arr[0] = t39
-  t40 = tipo
-  arr[1] = t40
-  t41 = 4.5
-  t42 = fl3
-  t43 = t41 ~ t42
-  t44 = 0.005
-  t45 = t43 ** t44
-  fl1 = t45
-  t46 = miChar
-  param t46
-  t47 = call func1, 1
-  in1 = t47
-
-  dataBool bl0
-  t48 = false
-  bl0 = t48
-
-  dataBool bl1
-  t49 = in1
-  t50 = fl1
-  t51 = t49 >= t50
-  t52 = false
-  t53 = t51 # t52
-  t54 = t53 ^ t53
-  bl1 = t54
-  t55 = 1
-  return t55
+  t22 = 1
+  return t22

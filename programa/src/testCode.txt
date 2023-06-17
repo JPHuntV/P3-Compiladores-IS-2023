@@ -1,8 +1,15 @@
+int funcA(int num1, int num2){
+
+    do {
+        if(num1> 99^num2 < 55){
+            num2= num2- -22$
+        }elif (num1==100){
+            num1 = num1 **11~33$
+        }
+    }while(num1< num2)$
+    return num1$
+}
+
 int main(){
-    int vara = 6$
-    int varb = -2$
-    @suma
-    int varc = vara + varb$
-    print(varc)$
-    return 0$
+    return 1$
 }

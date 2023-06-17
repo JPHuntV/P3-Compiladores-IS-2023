@@ -1,0 +1,8 @@
+
+
+Tabla: funcA  Tipo de retorno: int
+	valor: num1    tipo: int
+	valor: num2    tipo: int
+
+
+Tabla: main  Tipo de retorno: int
